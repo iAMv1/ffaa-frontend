@@ -32,6 +32,25 @@ export type Invoice = {
   status: string
   approved: boolean
   ocr_confidence?: number | null
+  file_path?: string | null
+  is_duplicate?: boolean
+  duplicate_of?: number | null
+  items?: InvoiceItem[]
+  audit?: { gstin_valid?: boolean | null; math_ok?: boolean; message?: string }
+}
+export type InvoiceItem = {
+  id: number
+  invoice_id: number
+  description: string
+  hsn_code?: string | null
+  quantity: number
+  rate: number
+  taxable_value: number
+  gst_rate: number
+  cgst: number
+  sgst: number
+  igst: number
+  line_total: number
 }
 export type BankRow = {
   id: number
@@ -42,6 +61,7 @@ export type BankRow = {
   credit: number
   balance: number
   reconciled: boolean
+  invoice_id?: number | null
 }
 
 export type EmailReminder = {
@@ -84,6 +104,19 @@ export type DuplicateFlag = {
   reviewed_at: string | null
 }
 
+export type Reconciliation = {
+  id: number
+  invoice_id: number
+  invoice_number?: string | null
+  bank_statement_id: number
+  narration?: string | null
+  amount?: number | null
+  match_score: number
+  matched_by?: string | null
+  confirmed: boolean
+  created_at?: string | null
+}
+
 export const api = {
   health: () => fetch('/health').then((r) => r.json()),
   clients: () => j<Client[]>('/clients'),
@@ -118,8 +151,9 @@ export const api = {
   uploadInvoice: (file: File, invoice_type = 'sales', client_id?: number) => {
     const fd = new FormData()
     fd.append('file', file)
+    fd.append('invoice_type', invoice_type)
     if (client_id != null) fd.append('client_id', String(client_id))
-    return j<Invoice>(`/upload-invoice?invoice_type=${invoice_type}`, { method: 'POST', body: fd })
+    return j<Invoice>('/upload-invoice', { method: 'POST', body: fd })
   },
   uploadInvoices: (files: File[], invoice_type: 'sales' | 'purchase', client_id: number) => {
     const fd = new FormData()
@@ -137,11 +171,11 @@ export const api = {
     }),
   bank: (client_id?: number) =>
     j<BankRow[]>(`/bank-statements${client_id != null ? `?client_id=${client_id}` : ''}`),
-  uploadBank: (file: File, client_id: number) => {
+  uploadBank: (file: File, client_id: number, preview = false) => {
     const fd = new FormData()
     fd.append('file', file)
-    return j<{ imported: number; rows: BankRow[] }>(
-      `/bank-statements/upload?client_id=${client_id}`,
+    return j<{ imported: number; rows: BankRow[]; preview?: boolean }>(
+      `/bank-statements/upload?client_id=${client_id}&preview=${preview}`,
       { method: 'POST', body: fd },
     )
   },
@@ -163,6 +197,42 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action }),
     }),
-  tallyUrl: (client_id?: number) =>
-    `${BASE}/export-tally${client_id != null ? `?client_id=${client_id}` : ''}`,
+  deleteInvoice: (id: number) => j<{ deleted: number }>(`/invoices/${id}`, { method: 'DELETE' }),
+  deleteBank: (id: number) =>
+    j<{ deleted: number }>(`/bank-statements/${id}`, { method: 'DELETE' }),
+  deleteClient: (id: number) => j<{ deleted: number }>(`/clients/${id}`, { method: 'DELETE' }),
+  deleteReminder: (id: number) =>
+    j<{ deleted: number }>(`/reminders/${id}`, { method: 'DELETE' }),
+  reconciliations: (client_id?: number) =>
+    j<Reconciliation[]>(
+      `/reconciliations${client_id != null ? `?client_id=${client_id}` : ''}`,
+    ),
+  deleteReconciliation: (id: number) =>
+    j<{ deleted: number }>(`/reconciliations/${id}`, { method: 'DELETE' }),
+  folders: (client_id: number) =>
+    j<{ client: string; folders: Record<string, Record<string, Record<string, string[]>>> }>(
+      `/clients/${client_id}/folders`,
+    ),
+  downloadTally: async (client_id?: number) => {
+    const url = `${BASE}/export-tally${client_id != null ? `?client_id=${client_id}` : ''}`
+    const r = await fetch(url)
+    if (!r.ok) {
+      let msg = r.statusText
+      try {
+        const j = await r.json()
+        msg = typeof j.detail === 'string' ? j.detail : JSON.stringify(j.detail || j)
+      } catch {
+        /* keep statusText */
+      }
+      if (r.status === 404) throw new Error(msg || 'No approved invoices to export')
+      throw new Error(msg || 'Tally export failed')
+    }
+    const blob = await r.blob()
+    const filename = r.headers.get('content-disposition')?.match(/filename="?([^"]+)"?/)?.[1] || 'tally_import.xml'
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(a.href)
+  },
 }
