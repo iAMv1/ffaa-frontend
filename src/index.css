@@ -3,15 +3,39 @@
 @theme {
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
-  --color-canvas: #f4f4f5;
+
+  /* ── ledger palette ─────────────────────────────────────────────── */
+  --color-canvas: #f7f7f8;
   --color-surface: #ffffff;
   --color-ink: #18181b;
   --color-muted: #71717a;
   --color-line: #e4e4e7;
-  --color-accent: #059669;
+  --color-accent: #059669; /* emerald — success states ONLY */
   --color-accent-soft: #ecfdf5;
   --color-danger: #dc2626;
   --color-warn: #b45309;
+
+  /* ── shadcn-compatible semantic layer for watermelon primitives ── */
+  --color-background: var(--color-canvas);
+  --color-foreground: var(--color-ink);
+  --color-card: var(--color-surface);
+  --color-card-foreground: var(--color-ink);
+  --color-popover: var(--color-surface);
+  --color-popover-foreground: var(--color-ink);
+  --color-primary: var(--color-ink); /* interactive chrome is ink, not emerald */
+  --color-primary-foreground: #fafafa;
+  --color-secondary: #f4f4f5;
+  --color-secondary-foreground: var(--color-ink);
+  --color-muted-foreground: var(--color-muted);
+  --color-accent-foreground: #ffffff;
+  --color-destructive: var(--color-danger);
+  --color-border: var(--color-line);
+  --color-input: var(--color-line);
+  --color-ring: #a1a1aa;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
 }
 
 @layer base {
@@ -34,6 +58,38 @@
   ::selection {
     background: color-mix(in oklab, var(--color-accent) 22%, white);
   }
+
+  /* focus ring: quiet ink outline for plain elements; watermelon
+     primitives bring their own ring utilities */
+  :focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--color-ring) 75%, transparent);
+    outline-offset: 2px;
+  }
+
+  /* refined scrollbars — ledger hairlines, not OS chrome */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #d4d4d8 transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: #d4d4d8;
+    border-radius: 9999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #a1a1aa;
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
 }
 
 /* fixed grain only — never on scroll containers */
@@ -50,14 +106,32 @@
   background: var(--color-surface);
   border: 1px solid color-mix(in oklab, var(--color-line) 90%, transparent);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    0 20px 40px -20px rgba(24, 24, 27, 0.06);
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 1px 2px rgba(24, 24, 27, 0.04),
+    0 12px 32px -16px rgba(24, 24, 27, 0.08);
 }
 
 .num {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
+}
+
+/* subtle elevation scale — three steps, never more */
+.elev-1 {
+  box-shadow:
+    0 1px 2px rgba(24, 24, 27, 0.05),
+    0 0 0 1px rgba(24, 24, 27, 0.03);
+}
+.elev-2 {
+  box-shadow:
+    0 1px 2px rgba(24, 24, 27, 0.05),
+    0 8px 24px -12px rgba(24, 24, 27, 0.12);
+}
+.elev-3 {
+  box-shadow:
+    0 4px 8px -4px rgba(24, 24, 27, 0.06),
+    0 24px 64px -24px rgba(24, 24, 27, 0.22);
 }
 
 input,
@@ -85,4 +159,30 @@ textarea {
   transform: translateX(-100%);
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
   animation: shimmer 1.4s infinite;
+}
+
+/* ── registry accent guard ─────────────────────────────────────────
+   The watermelon registry uses `accent` as its generic highlight wash,
+   but in FFAA emerald is reserved for success signals. These rules sit
+   outside cascade layers so they win over the registry's utility
+   classes and keep all interactive hovers/focus washes zinc-neutral. */
+[data-slot="skeleton"],
+[data-slot="dropdown-menu-highlight"] {
+  background-color: var(--color-line);
+}
+[data-slot="button"]:is([data-variant="ghost"], [data-variant="outline"]):hover,
+[data-slot="alert-dialog-cancel"]:hover {
+  background-color: color-mix(in oklab, var(--color-ink) 5%, transparent);
+  color: var(--color-foreground);
+}
+[data-slot="select-item"]:focus,
+[data-slot^="dropdown-menu-item"]:focus {
+  background-color: color-mix(in oklab, var(--color-ink) 5%, transparent);
+  color: var(--color-foreground);
+}
+
+/* sonner error toast matches the danger token */
+[data-sonner-toast][data-type="error"] {
+  border-color: #fecaca !important;
+  color: #991b1b !important;
 }
