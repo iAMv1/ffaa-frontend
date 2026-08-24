@@ -12,76 +12,25 @@ async function j<T>(path: string, init?: RequestInit): Promise<T> {
   return r.json()
 }
 
-export type Client = { id: number; name: string; email?: string | null; gst_number?: string | null; address?: string | null }
-export type Invoice = {
-  id: number
-  client_id: number
-  invoice_number: string
-  invoice_date: string | null
-  company_name: string
-  gst_rate: number
-  taxable_value: number
-  total_amount: number
-  cgst: number
-  sgst: number
-  igst: number
-  hsn_code?: string | null
-  quantity?: number | null
-  item_description?: string | null
-  invoice_type: string
-  status: string
-  approved: boolean
-  ocr_confidence?: number | null
-  file_path?: string | null
-  is_duplicate?: boolean
-  duplicate_of?: number | null
-  items?: InvoiceItem[]
-  audit?: { gstin_valid?: boolean | null; math_ok?: boolean; message?: string }
-}
-export type InvoiceItem = {
-  id: number
-  invoice_id: number
-  description: string
-  hsn_code?: string | null
-  quantity: number
-  rate: number
-  taxable_value: number
-  gst_rate: number
-  cgst: number
-  sgst: number
-  igst: number
-  line_total: number
-}
-export type BankRow = {
-  id: number
-  client_id: number
-  date: string
-  narration: string
-  debit: number
-  credit: number
-  balance: number
-  reconciled: boolean
-  invoice_id?: number | null
-}
+// Payload shapes are GENERATED from the backend OpenAPI spec:
+//   npm run gen:api   (regenerate after any Pydantic schema change)
+// Hand-editing payload types here is forbidden — extend schemas.py instead.
+import type { components } from './api/schema.gen'
 
-export type EmailReminder = {
-  id: number
-  client_id: number
-  subject: string
-  body: string
-  status: string
-  error_message?: string | null
-  sent_at?: string | null
-  created_at?: string
-}
+type S = components['schemas']
+export type Client = S['ClientOut']
+export type Invoice = S['InvoiceOut']
+export type InvoiceItem = S['InvoiceItemOut']
+export type BankRow = S['BankStatementOut']
+export type EmailReminder = S['EmailReminderOut']
+export type UploadFileResult = S['UploadFileResult']
+export type DuplicateFlag = S['DuplicateFlagOut']
+export type Reconciliation = S['ReconciliationOut']
 
-export type UploadFileResult = {
-  filename: string
-  status: string
-  invoice?: Invoice | null
-  error?: string | null
-}
+/** UI-only narrowing of the backend's free-text flag status (deliberate FE contract). */
+export type FlagStatus = 'pending' | 'accepted' | 'rejected'
 
+/** Freeform preview dict from GET /reminders/preview — not a Pydantic model yet. */
 export type ReminderPreview = {
   client_id: number
   name: string
@@ -91,30 +40,6 @@ export type ReminderPreview = {
   days_since_upload?: number | null
   subject: string
   body: string
-}
-
-export type DuplicateFlag = {
-  id: number
-  invoice_id: number
-  potential_duplicate_id: number
-  similarity_score: number
-  matched_fields: string
-  status: 'pending' | 'accepted' | 'rejected'
-  created_at: string
-  reviewed_at: string | null
-}
-
-export type Reconciliation = {
-  id: number
-  invoice_id: number
-  invoice_number?: string | null
-  bank_statement_id: number
-  narration?: string | null
-  amount?: number | null
-  match_score: number
-  matched_by?: string | null
-  confirmed: boolean
-  created_at?: string | null
 }
 
 export const api = {

@@ -77,7 +77,7 @@ export function Duplicates() {
                     </TableCell>
                     <TableCell className="whitespace-normal px-3 py-3.5">
                       <span className="flex flex-wrap items-center gap-1">
-                        {f.matched_fields
+                        {(f.matched_fields ?? '')
                           .split(',')
                           .map((field) => field.trim())
                           .filter(Boolean)
