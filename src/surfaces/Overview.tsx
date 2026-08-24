@@ -1,7 +1,8 @@
 import { useEffect, type ReactNode } from 'react'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from 'recharts'
-import { useApp } from '@/state/store'
+import { useData } from '@/state/data'
+import { useUi } from '@/state/ui'
 import { EmptyHint, money, statusClass } from '@/lib/ui-helpers'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
@@ -103,9 +104,8 @@ export function Overview() {
     chartData,
     clients,
     clientId, setClientId,
-    setTab,
-    setShowCreateClient,
-  } = useApp()
+  } = useData()
+  const { setTab, setShowCreateClient } = useUi()
 
   const recent = [...invoices].sort((a, b) => b.id - a.id).slice(0, 7)
 

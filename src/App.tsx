@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react'
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
 import { CircleNotch, WarningCircle } from '@phosphor-icons/react'
 import { Toaster, toast } from 'sonner'
@@ -23,7 +22,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { AppProvider, useApp } from '@/state/store'
+import { DataProvider, useData } from '@/state/data'
+import { UiProvider, useUi } from '@/state/ui'
 import { Sidebar } from '@/shell/Sidebar'
 import { TopBar } from '@/shell/TopBar'
 import { Overview } from '@/surfaces/Overview'
@@ -46,40 +46,11 @@ const API_PORT = 8000
 
 export default function App() {
   return (
-    <AppProvider>
-      <Shell />
-    </AppProvider>
-  )
-}
-
-/** Fires each store flash message through sonner exactly once. */
-function ToastBridge() {
-  const { toasts } = useApp()
-  const seen = useRef(new Set<number>())
-  useEffect(() => {
-    for (const t of toasts) {
-      if (seen.current.has(t.id)) continue
-      seen.current.add(t.id)
-      if (t.kind === 'err') toast.error(t.msg)
-      else toast(t.msg)
-    }
-  }, [toasts])
-  return (
-    <Toaster
-      position="bottom-center"
-      theme="light"
-      toastOptions={{
-        style: {
-          fontFamily: 'var(--font-sans)',
-          fontSize: '13px',
-          background: 'var(--color-surface)',
-          color: 'var(--color-ink)',
-          border: '1px solid var(--color-line)',
-          borderRadius: '10px',
-          boxShadow: '0 12px 40px -16px rgba(24, 24, 27, 0.25)',
-        },
-      }}
-    />
+    <DataProvider>
+      <UiProvider>
+        <Shell />
+      </UiProvider>
+    </DataProvider>
   )
 }
 
@@ -87,14 +58,28 @@ function Shell() {
   const {
     tab,
     sidebarCollapsed,
-    activeClient,
-    err,
-    busy,
     confirm, setConfirm,
     showCreateClient, setShowCreateClient,
+  } = useUi()
+  const {
+    err,
+    busy,
     newClientName, setNewClientName,
     createClient,
-  } = useApp()
+  } = useData()
+
+  const handleCreateClient = async (e: React.FormEvent) => {
+    try {
+      const c = await createClient(e)
+      if (c) {
+        toast.success('Client added')
+        setNewClientName('')
+        setShowCreateClient(false)
+      }
+    } catch (err2) {
+      toast.error(err2 instanceof Error ? err2.message : 'Failed')
+    }
+  }
 
   return (
     <MotionConfig reducedMotion="user">
@@ -121,51 +106,45 @@ function Shell() {
 
           <AnimatePresence mode="wait">
             {tab === 'overview' && (
-              <motion.div key="ov" {...tabMotion} className="space-y-8">
+              <motion.div key="overview" {...tabMotion}>
                 <Overview />
               </motion.div>
             )}
-
-            {tab === 'client' && activeClient && (
-              <motion.div key="cli" {...tabMotion} className="space-y-8">
+            {tab === 'client' && (
+              <motion.div key="client" {...tabMotion}>
                 <Client />
               </motion.div>
             )}
-
             {tab === 'invoices' && (
-              <motion.div key="inv" {...tabMotion} className="space-y-4">
+              <motion.div key="invoices" {...tabMotion}>
                 <Invoices />
               </motion.div>
             )}
-
             {tab === 'bank' && (
-              <motion.div key="bank" {...tabMotion} className="space-y-4">
+              <motion.div key="bank" {...tabMotion}>
                 <Bank />
               </motion.div>
             )}
-
+            {tab === 'reconcile' && (
+              <motion.div key="reconcile" {...tabMotion}>
+                <Reconcile />
+              </motion.div>
+            )}
             {tab === 'duplicates' && (
-              <motion.div key="dups" {...tabMotion} className="space-y-5">
+              <motion.div key="duplicates" {...tabMotion}>
                 <Duplicates />
               </motion.div>
             )}
-
             {tab === 'reminders' && (
-              <motion.div key="rem" {...tabMotion} className="space-y-5">
+              <motion.div key="reminders" {...tabMotion}>
                 <Reminders />
-              </motion.div>
-            )}
-
-            {tab === 'reconcile' && (
-              <motion.div key="rec" {...tabMotion} className="space-y-5">
-                <Reconcile />
               </motion.div>
             )}
           </AnimatePresence>
         </main>
       </div>
 
-      {/* confirm — driven entirely by store confirm state */}
+      {/* confirm — driven by ui context */}
       <AlertDialog
         open={confirm !== null}
         onOpenChange={(open) => {
@@ -202,7 +181,7 @@ function Shell() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* create client — driven entirely by store showCreateClient state */}
+      {/* create client — dialog chrome in ui, action in data */}
       <Dialog open={showCreateClient} onOpenChange={setShowCreateClient}>
         <DialogContent className="max-w-sm gap-5 rounded-xl p-6">
           <DialogHeader>
@@ -213,7 +192,7 @@ function Shell() {
               Name as it appears on invoices. You can add GSTIN and email later.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={createClient}>
+          <form onSubmit={handleCreateClient}>
             <div className="space-y-1.5">
               <Label
                 htmlFor="new-client-name"
@@ -254,7 +233,21 @@ function Shell() {
         </DialogContent>
       </Dialog>
 
-      <ToastBridge />
+      <Toaster
+        position="bottom-center"
+        theme="light"
+        toastOptions={{
+          style: {
+            fontFamily: 'var(--font-sans)',
+            fontSize: '13px',
+            background: 'var(--color-surface)',
+            color: 'var(--color-ink)',
+            border: '1px solid var(--color-line)',
+            borderRadius: '10px',
+            boxShadow: '0 12px 40px -16px rgba(24, 24, 27, 0.25)',
+          },
+        }}
+      />
     </div>
     </MotionConfig>
   )

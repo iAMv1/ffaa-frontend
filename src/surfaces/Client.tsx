@@ -13,7 +13,9 @@ import {
   WarningCircle,
 } from '@phosphor-icons/react'
 import { api } from '@/api'
-import { useApp } from '@/state/store'
+import { toast } from 'sonner'
+import { useData } from '@/state/data'
+import { useUi } from '@/state/ui'
 import { EmptyHint, SkeletonRows, money, statusClass } from '@/lib/ui-helpers'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -37,6 +39,8 @@ function rowEntrance(idx: number) {
 }
 
 export function Client() {
+  // email-edit error banner is client-surface-local (F-02 split)
+  const [emailError, setEmailError] = useState('')
   const {
     loading,
     busy, setBusy,
@@ -46,13 +50,10 @@ export function Client() {
     banks,
     reminders,
     folders,
-    emailError, setEmailError,
     setClients,
-    setTab,
-    setConfirm,
-    flash,
     load,
-  } = useApp()
+  } = useData()
+  const { setTab, setConfirm } = useUi()
 
   const [emailSaved, setEmailSaved] = useState(false)
   const savedTimer = useRef<number | null>(null)
@@ -147,7 +148,7 @@ export function Client() {
                 if (savedTimer.current) window.clearTimeout(savedTimer.current)
                 savedTimer.current = window.setTimeout(() => setEmailSaved(false), 2200)
               } catch (e) {
-                flash(e instanceof Error ? e.message : 'Save failed', 'err')
+                toast.error(e instanceof Error ? e.message : 'Save failed')
               }
             }}
           />
@@ -162,10 +163,10 @@ export function Client() {
                 setBusy(true)
                 try {
                   await api.sendReminder(activeClient.id)
-                  flash('Reminder sent')
+                  toast.success('Reminder sent')
                   load()
                 } catch (e) {
-                  flash(e instanceof Error ? e.message : 'Send failed', 'err')
+                  toast.error(e instanceof Error ? e.message : 'Send failed')
                 } finally {
                   setBusy(false)
                 }
@@ -183,9 +184,9 @@ export function Client() {
                 if (!activeClient) return
                 try {
                   await api.downloadTally(activeClient.id)
-                  flash('Tally XML downloaded')
+                  toast.success('Tally XML downloaded')
                 } catch (e) {
-                  flash(e instanceof Error ? e.message : 'Tally export failed', 'err')
+                  toast.error(e instanceof Error ? e.message : 'Tally export failed')
                 }
               }}
               className="h-8 flex-1 gap-2 border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-800 hover:bg-zinc-50 hover:text-zinc-900"
@@ -210,11 +211,11 @@ export function Client() {
                     setConfirm(null)
                     try {
                       await api.deleteClient(activeClient.id)
-                      flash(`Deleted ${activeClient.name}`)
+                      toast.success(`Deleted ${activeClient.name}`)
                       setClientId(null)
                       await load()
                     } catch (e) {
-                      flash(e instanceof Error ? e.message : 'Delete failed', 'err')
+                      toast.error(e instanceof Error ? e.message : 'Delete failed')
                     } finally {
                       setBusy(false)
                     }

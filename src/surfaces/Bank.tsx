@@ -1,7 +1,10 @@
+import { useState } from 'react'
 import { AnimatePresence, motion, type Variants } from 'framer-motion'
 import { CheckCircle, CircleNotch, Trash, UploadSimple } from '@phosphor-icons/react'
-import { api } from '@/api'
-import { useApp } from '@/state/store'
+import { api, type BankRow } from '@/api'
+import { toast } from 'sonner'
+import { useData } from '@/state/data'
+import { useUi } from '@/state/ui'
 import { EmptyHint, SkeletonRows, money } from '@/lib/ui-helpers'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
@@ -30,24 +33,55 @@ const rowVariants: Variants = {
 }
 
 export function Bank() {
+  // upload dropzone + parse-preview state is bank-surface only (F-02 split)
+  const [bankDragOver, setBankDragOver] = useState(false)
+  const [bankPreviewRows, setBankPreviewRows] = useState<BankRow[]>([])
+  const [bankPreviewFile, setBankPreviewFile] = useState<File | null>(null)
   const {
     loading,
-    busy,
+    busy, setBusy,
     clientId,
-    bankDragOver,
-    setBankDragOver,
-    bankPreviewRows,
-    setBankPreviewRows,
-    setBankPreviewFile,
     banks,
     rowBusy,
     setRowBusy,
-    onUploadBank,
-    commitBankPreview,
-    setConfirm,
-    flash,
     load,
-  } = useApp()
+  } = useData()
+  const { setConfirm } = useUi()
+
+  // Throws through to the caller's catch for toasts; preview commit shares it.
+  const onUploadBank = async (f: File | null) => {
+    if (!f || clientId == null) {
+      toast.error('Select a client first')
+      return
+    }
+    setBusy(true)
+    try {
+      const r = await api.uploadBank(f, clientId, true)
+      setBankPreviewRows(r.rows)
+      setBankPreviewFile(f)
+      toast.success(`${r.rows.length} rows parsed — review and import`)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Bank upload failed')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const commitBankPreview = async () => {
+    if (!bankPreviewFile || clientId == null) return
+    setBusy(true)
+    try {
+      const r = await api.uploadBank(bankPreviewFile, clientId, false)
+      setBankPreviewRows([])
+      setBankPreviewFile(null)
+      toast.success(`Imported ${r.imported} rows`)
+      await load()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Bank import failed')
+    } finally {
+      setBusy(false)
+    }
+  }
 
   return (
     <>
@@ -296,12 +330,11 @@ export function Bank() {
                                 setConfirm(null)
                                 try {
                                   await api.deleteBank(b.id)
-                                  flash('Bank row deleted')
+                                  toast.success('Bank row deleted')
                                   load()
                                 } catch (e) {
-                                  flash(
+                                  toast.error(
                                     e instanceof Error ? e.message : 'Delete failed',
-                                    'err',
                                   )
                                 } finally {
                                   setRowBusy(null)

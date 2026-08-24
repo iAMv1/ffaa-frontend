@@ -1,16 +1,25 @@
+import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   ArrowsClockwise,
+  Bank,
   Buildings,
   Check,
+  Copy,
+  Envelope,
+  FileText,
+  GitMerge,
   Plus,
+  SquaresFour,
   Sidebar as SidebarIcon,
   SidebarSimple,
   X,
 } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { useApp, type TabItem } from '@/state/store'
+import { useUi } from '@/state/ui'
+import { useData } from '@/state/data'
+import type { TabItem } from '@/state/types'
 import { cn } from '@/lib/utils'
 
 const pillSpring = { type: 'spring' as const, stiffness: 100, damping: 20 }
@@ -69,15 +78,33 @@ function NavItem({
 export function Sidebar() {
   const {
     tab, setTab,
-    tabs,
-    clients,
-    clientId, setClientId,
     sidebarCollapsed, setSidebarCollapsed,
     sidebarOpen, setSidebarOpen,
-    clientPopoverOpen, setClientPopoverOpen,
     setShowCreateClient,
+  } = useUi()
+  const {
+    clients,
+    clientId, setClientId,
+    activeClient,
     load,
-  } = useApp()
+  } = useData()
+  // collapsed-rail client popover is sidebar-only chrome
+  const [clientPopoverOpen, setClientPopoverOpen] = useState(false)
+
+  const tabs: TabItem[] = useMemo(
+    () => [
+      { id: 'overview', label: 'Overview', icon: SquaresFour },
+      ...(activeClient
+        ? [{ id: 'client' as const, label: activeClient.name, icon: Buildings }]
+        : []),
+      { id: 'invoices', label: 'Invoices', icon: FileText },
+      { id: 'bank', label: 'Bank', icon: Bank },
+      { id: 'reconcile', label: 'Reconcile', icon: GitMerge },
+      { id: 'duplicates', label: 'Duplicates', icon: Copy },
+      { id: 'reminders', label: 'Reminders', icon: Envelope },
+    ],
+    [activeClient],
+  )
 
   return (
     <>

@@ -1,7 +1,9 @@
 import { CircleNotch } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
+import { toast } from 'sonner'
 import { api } from '@/api'
-import { useApp } from '@/state/store'
+import { useData } from '@/state/data'
+import { useUi } from '@/state/ui'
 import { EmptyHint, SkeletonRows, statusClass } from '@/lib/ui-helpers'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -20,11 +22,9 @@ export function Duplicates() {
     loading,
     flags,
     rowBusy, setRowBusy,
-    setConfirm,
-    flash,
     load,
-  } = useApp()
-
+  } = useData()
+  const { setConfirm } = useUi()
   return (
     <>
       <Card className="gap-0 rounded-2xl border-zinc-200 bg-white px-6 py-5 shadow-sm">
@@ -114,10 +114,10 @@ export function Duplicates() {
                                   setConfirm(null)
                                   try {
                                     await api.resolveDuplicate(f.id, 'accept')
-                                    flash('Marked duplicate')
+                                    toast.success('Marked duplicate')
                                     load()
                                   } catch (e) {
-                                    flash(e instanceof Error ? e.message : 'Failed', 'err')
+                                    toast.error(e instanceof Error ? e.message : 'Failed')
                                   } finally {
                                     setRowBusy(null)
                                   }
@@ -148,10 +148,10 @@ export function Duplicates() {
                                   setConfirm(null)
                                   try {
                                     await api.resolveDuplicate(f.id, 'reject')
-                                    flash('Flag rejected')
+                                    toast.success('Flag rejected')
                                     load()
                                   } catch (e) {
-                                    flash(e instanceof Error ? e.message : 'Failed', 'err')
+                                    toast.error(e instanceof Error ? e.message : 'Failed')
                                   } finally {
                                     setRowBusy(null)
                                   }

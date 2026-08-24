@@ -1,18 +1,13 @@
 import { DownloadSimple, List } from '@phosphor-icons/react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { api } from '@/api'
-import { useApp } from '@/state/store'
+import { useUi } from '@/state/ui'
+import { useData } from '@/state/data'
 
 export function TopBar() {
-  const {
-    tab,
-    stats,
-    scopeAll,
-    activeClient,
-    clientId,
-    setSidebarOpen,
-    flash,
-  } = useApp()
+  const { tab, setSidebarOpen } = useUi()
+  const { stats, scopeAll, activeClient, clientId } = useData()
 
   return (
     <header className="sticky top-0 z-20 -mx-4 mb-8 border-b border-zinc-200/80 bg-canvas/85 px-4 py-5 backdrop-blur-md sm:-mx-6 sm:px-6 lg:-mx-10 lg:-mt-8 lg:px-10 lg:py-6">
@@ -69,9 +64,9 @@ export function TopBar() {
             onClick={async () => {
               try {
                 await api.downloadTally(clientId ?? undefined)
-                flash('Tally XML downloaded')
+                toast.success('Tally XML downloaded')
               } catch (e) {
-                flash(e instanceof Error ? e.message : 'Tally export failed', 'err')
+                toast.error(e instanceof Error ? e.message : 'Tally export failed')
               }
             }}
             className="border-zinc-200 text-zinc-700"

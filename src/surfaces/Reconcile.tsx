@@ -1,7 +1,11 @@
+import { useEffect, useState } from 'react'
 import { motion, type Variants } from 'framer-motion'
 import { ArrowClockwise } from '@phosphor-icons/react'
+import { toast } from 'sonner'
 import { api } from '@/api'
-import { useApp } from '@/state/store'
+import { useData } from '@/state/data'
+import { useUi } from '@/state/ui'
+import type { MatchCandidate } from '@/state/types'
 import { EmptyHint, SkeletonRows, money } from '@/lib/ui-helpers'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -28,20 +32,15 @@ const rowVariants: Variants = {
 }
 
 export function Reconcile() {
-  const {
-    clientId,
-    busy,
-    setBusy,
-    loading,
-    matches,
-    setMatches,
-    reconHistory,
-    rowBusy,
-    setConfirm,
-    setRowBusy,
-    flash,
-    load,
-  } = useApp()
+  // match candidates are reconcile-run output — surface-local (F-02 split);
+  // reset when the client scope changes so stale pairs never render
+  const [matches, setMatches] = useState<MatchCandidate[]>([])
+  const { clientId, busy, setBusy, loading, reconHistory, rowBusy, setRowBusy, load } = useData()
+  const { setConfirm } = useUi()
+
+  useEffect(() => {
+    setMatches([])
+  }, [clientId])
 
   return (
     <>
@@ -62,9 +61,9 @@ export function Reconcile() {
               try {
                 const r = await api.reconcile(clientId, false)
                 setMatches(r.matches)
-                flash(`${r.matches.length} candidate${r.matches.length === 1 ? '' : 's'}`)
+                toast.success(`${r.matches.length} candidate${r.matches.length === 1 ? '' : 's'}`)
               } catch (e) {
-                flash(e instanceof Error ? e.message : 'Failed', 'err')
+                toast.error(e instanceof Error ? e.message : 'Failed')
               } finally {
                 setBusy(false)
               }
@@ -82,10 +81,10 @@ export function Reconcile() {
               try {
                 const r = await api.reconcile(clientId, true)
                 setMatches(r.matches)
-                flash('Confirmed')
+                toast.success('Confirmed')
                 load()
               } catch (e) {
-                flash(e instanceof Error ? e.message : 'Failed', 'err')
+                toast.error(e instanceof Error ? e.message : 'Failed')
               } finally {
                 setBusy(false)
               }
@@ -234,13 +233,10 @@ export function Reconcile() {
                                 setConfirm(null)
                                 try {
                                   await api.deleteReconciliation(r.id)
-                                  flash('Reconciliation removed')
+                                  toast.success('Reconciliation removed')
                                   load()
                                 } catch (e) {
-                                  flash(
-                                    e instanceof Error ? e.message : 'Delete failed',
-                                    'err',
-                                  )
+                                  toast.error(e instanceof Error ? e.message : 'Delete failed')
                                 } finally {
                                   setRowBusy(null)
                                 }

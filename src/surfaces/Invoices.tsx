@@ -1,4 +1,4 @@
-import { Fragment } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import {
   ArrowsClockwise,
   CheckCircle,
@@ -10,8 +10,10 @@ import {
   WarningCircle,
 } from '@phosphor-icons/react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { api } from '@/api'
-import { useApp } from '@/state/store'
+import { api, type Invoice, type UploadFileResult } from '@/api'
+import { toast } from 'sonner'
+import { useData } from '@/state/data'
+import { useUi } from '@/state/ui'
 import { EmptyHint, money } from '@/lib/ui-helpers'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
@@ -56,30 +58,115 @@ function statusTone(s: string) {
 
 const MotionTableRow = motion.create(TableRow)
 
-export function Invoices() {
-  const {
-    loading,
-    activeClient,
-    clientId,
-    invoices,
-    uploadBusy,
-    batchResults,
-    failedFiles,
-    dragOverType, setDragOverType,
-    rowBusy, setRowBusy,
-    editingId, setEditingId,
-    draft, setDraft,
-    fieldErrors, setFieldErrors,
-    onUploadInvoices,
-    startEdit,
-    saveEdit,
-    setConfirm,
-    flash,
-    load,
-  } = useApp()
+const ALLOWED_EXT = ['.jpg', '.jpeg', '.png', '.bmp', '.tif', '.tiff', '.pdf']
 
-  // Remount rows only when queue contents change -> stagger plays once per data load.
-  const loadKey = invoices.map((i) => i.id).join(',')
+export function Invoices() {
+  // upload queue + edit draft live only here — keystrokes re-render this form,
+  // not the other surfaces' tables (F-02 split)
+  const [dragOverType, setDragOverType] = useState<'sales' | 'purchase' | null>(null)
+  const [uploadBusy, setUploadBusy] = useState(false)
+  const [batchResults, setBatchResults] = useState<UploadFileResult[]>([])
+  const [failedFiles, setFailedFiles] = useState<{ files: File[]; type: 'sales' | 'purchase' } | null>(null)
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [draft, setDraft] = useState<Record<string, string>>({})
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const { loading, activeClient, clientId, invoices, rowBusy, setRowBusy, load } = useData()
+  const { setConfirm } = useUi()
+
+  // Reset per-client ephemeral state when the scope switches.
+  useEffect(() => {
+    setBatchResults([])
+    setFailedFiles(null)
+    setDragOverType(null)
+  }, [clientId])
+
+  const onUploadInvoices = async (files: File[], type: 'sales' | 'purchase') => {
+    if (files.length === 0) return
+    if (clientId == null) {
+      toast.error('Select a client first')
+      return
+    }
+    const filtered = files.filter((f) =>
+      ALLOWED_EXT.some((e) => f.name.toLowerCase().endsWith(e)),
+    )
+    const rejected = files.length - filtered.length
+    if (rejected > 0) toast.error(`${rejected} file(s) skipped (unsupported type)`)
+    if (filtered.length === 0) return
+    setUploadBusy(true)
+    setBatchResults([])
+    setFailedFiles(null)
+    try {
+      const results = await api.uploadInvoices(filtered, type, clientId)
+      setBatchResults(results)
+      const failedNames = new Set(results.filter((r) => r.status !== 'ok').map((r) => r.filename))
+      const retry = files.filter((f) => failedNames.has(f.name))
+      if (retry.length > 0) setFailedFiles({ files: retry, type })
+      const okCount = results.length - retry.length
+      toast.success(`${okCount} extracted, ${retry.length} failed`)
+      await load()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Upload failed')
+    } finally {
+      setUploadBusy(false)
+    }
+  }
+
+  const startEdit = (inv: Invoice) => {
+    setEditingId(inv.id)
+    setFieldErrors({})
+    setDraft({
+      invoice_number: inv.invoice_number ?? '',
+      invoice_date: inv.invoice_date ?? '',
+      company_name: inv.company_name ?? '',
+      taxable_value: String(inv.taxable_value ?? ''),
+      gst_rate: String(inv.gst_rate ?? ''),
+      total_amount: String(inv.total_amount ?? ''),
+      cgst: String(inv.cgst ?? ''),
+      sgst: String(inv.sgst ?? ''),
+      igst: String(inv.igst ?? ''),
+      hsn_code: inv.hsn_code ?? '',
+      quantity: inv.quantity != null ? String(inv.quantity) : '',
+      item_description: inv.item_description ?? '',
+    })
+  }
+
+  const saveEdit = async (inv: Invoice) => {
+    const errs: Record<string, string> = {}
+    if (!draft.company_name?.trim()) errs.company_name = 'Party name required'
+    if (!draft.total_amount?.trim() || isNaN(Number(draft.total_amount)))
+      errs.total_amount = 'Valid amount required'
+    setFieldErrors(errs)
+    if (Object.keys(errs).length) return
+
+    setRowBusy(inv.id)
+    const num = (k: string) => (draft[k] === '' ? 0 : Number(draft[k]))
+    try {
+      await api.review(inv.id, {
+        client_id: inv.client_id,
+        invoice_type: inv.invoice_type,
+        invoice_number: draft.invoice_number || null,
+        invoice_date: draft.invoice_date || null,
+        company_name: draft.company_name || null,
+        taxable_value: num('taxable_value'),
+        gst_rate: num('gst_rate'),
+        total_amount: num('total_amount'),
+        cgst: num('cgst'),
+        sgst: num('sgst'),
+        igst: num('igst'),
+        hsn_code: draft.hsn_code || null,
+        quantity: draft.quantity === '' ? null : Number(draft.quantity),
+        item_description: draft.item_description || null,
+      })
+      toast.success(`Saved ${draft.invoice_number || inv.id}`)
+      setEditingId(null)
+      setFieldErrors({})
+      await load()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Save failed')
+    } finally {
+      setRowBusy(null)
+    }
+  }
 
   return (
     <>
@@ -248,7 +335,7 @@ export function Invoices() {
                 <TableHead className={cn(HEAD_CLS, 'px-5')} />
               </TableRow>
             </TableHeader>
-            <TableBody key={loadKey} className="[&_tr]:border-zinc-100">
+            <TableBody className="[&_tr]:border-zinc-100">
               {invoices.map((inv, i) => (
                 <Fragment key={inv.id}>
                 <MotionTableRow
@@ -372,10 +459,10 @@ export function Invoices() {
                                 setConfirm(null)
                                 try {
                                   await api.approve(inv.id)
-                                  flash(`Approved ${inv.invoice_number || inv.id}`)
+                                  toast.success(`Approved ${inv.invoice_number || inv.id}`)
                                   load()
                                 } catch (e) {
-                                  flash(e instanceof Error ? e.message : 'Approve failed', 'err')
+                                  toast.error(e instanceof Error ? e.message : 'Approve failed')
                                 } finally {
                                   setRowBusy(null)
                                 }
@@ -403,10 +490,10 @@ export function Invoices() {
                               setRowBusy(inv.id)
                               try {
                                 const r = await api.checkDuplicates(inv.id)
-                                flash(`${r.flags_created} duplicate flag(s)`)
+                                toast.success(`${r.flags_created} duplicate flag(s)`)
                                 load()
                               } catch (e) {
-                                flash(e instanceof Error ? e.message : 'Scan failed', 'err')
+                                toast.error(e instanceof Error ? e.message : 'Scan failed')
                               } finally {
                                 setRowBusy(null)
                               }
@@ -436,10 +523,10 @@ export function Invoices() {
                                   setConfirm(null)
                                   try {
                                     await api.deleteInvoice(inv.id)
-                                    flash(`Deleted ${inv.invoice_number || inv.id}`)
+                                    toast.success(`Deleted ${inv.invoice_number || inv.id}`)
                                     load()
                                   } catch (e) {
-                                    flash(e instanceof Error ? e.message : 'Delete failed', 'err')
+                                    toast.error(e instanceof Error ? e.message : 'Delete failed')
                                   } finally {
                                     setRowBusy(null)
                                   }

@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { CircleNotch, Envelope, Trash } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
+import { toast } from 'sonner'
 import { api, type ReminderPreview } from '@/api'
-import { useApp } from '@/state/store'
+import { useData } from '@/state/data'
+import { useUi } from '@/state/ui'
 import { EmptyHint, SkeletonRows } from '@/lib/ui-helpers'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -23,27 +25,34 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 const DAY_PRESETS = [7, 14, 30]
 
 export function Reminders() {
-  const {
-    loading,
-    clients,
-    preview,
-    previewDays, setPreviewDays,
-    previewLoading,
-    loadPreview,
-    sendAllBusy,
-    rowBusy,
-    reminders,
-    setConfirm,
-    setRowBusy,
-    flash,
-    load,
-  } = useApp()
+  // preview + send flow is reminders-surface only — sunk here (F-02 split);
+  // auto-refresh when the tab becomes visible or the window changes
+  const [preview, setPreview] = useState<ReminderPreview[]>([])
+  const [previewDays, setPreviewDays] = useState(30)
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const { loading, clients, rowBusy, setRowBusy, reminders, load } = useData()
+  const { setConfirm, tab } = useUi()
+
+  const loadPreview = useCallback(async () => {
+    setPreviewLoading(true)
+    try {
+      setPreview(await api.reminderPreview(previewDays))
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Preview failed')
+    } finally {
+      setPreviewLoading(false)
+    }
+  }, [previewDays])
+
+  useEffect(() => {
+    if (tab === 'reminders') loadPreview()
+  }, [tab, loadPreview])
 
   const [draftDays, setDraftDays] = useState(previewDays)
   const [allBusy, setAllBusy] = useState(false)
   const [failedIds, setFailedIds] = useState<ReadonlySet<number>>(() => new Set())
 
-  const anyAllBusy = sendAllBusy || allBusy
+  const anyAllBusy = allBusy
   const sendableCount = preview.filter((p) => p.email).length
 
   const clearFailure = (client_id: number) =>
@@ -60,12 +69,12 @@ export function Reminders() {
     setRowBusy(p.client_id)
     try {
       await api.sendReminder(p.client_id)
-      flash(`Sent to ${p.name}`)
+      toast.success(`Sent to ${p.name}`)
       clearFailure(p.client_id)
       await Promise.all([load(), loadPreview()])
     } catch (e) {
       setFailedIds((prev) => new Set(prev).add(p.client_id))
-      flash(e instanceof Error ? e.message : 'Send failed', 'err')
+      toast.error(e instanceof Error ? e.message : 'Send failed')
     } finally {
       setRowBusy(null)
     }
@@ -87,7 +96,8 @@ export function Reminders() {
         failed.add(p.client_id)
       }
     }
-    flash(`${ok} sent${failed.size ? `, ${failed.size} failed` : ''}`, failed.size ? 'err' : 'ok')
+    if (failed.size) toast.error(`${ok} sent, ${failed.size} failed`)
+    else toast.success(`${ok} sent`)
     setFailedIds(failed)
     setAllBusy(false)
     await Promise.all([load(), loadPreview()])
@@ -361,10 +371,10 @@ export function Reminders() {
                               setConfirm(null)
                               try {
                                 await api.deleteReminder(r.id)
-                                flash('Reminder deleted')
+                                toast.success('Reminder deleted')
                                 load()
                               } catch (e) {
-                                flash(e instanceof Error ? e.message : 'Delete failed', 'err')
+                                toast.error(e instanceof Error ? e.message : 'Delete failed')
                               } finally {
                                 setRowBusy(null)
                               }
