@@ -73,7 +73,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         api.reminderHistory(),
         api.reconciliations(clientId ?? undefined),
       ])
-      setClients(c)
+      // named (manually created) clients first; OCR-minted ones trail (ticket 03/15)
+      setClients([...c].sort((a, b) => Number(a.auto_created ?? false) - Number(b.auto_created ?? false)))
       setInvoices(inv)
       setBanks(b)
       setFlags(f)

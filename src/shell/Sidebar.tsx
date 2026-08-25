@@ -217,6 +217,11 @@ export function Sidebar() {
                       >
                         <span className="truncate font-medium text-zinc-800">
                           {c.name}
+                          {c.auto_created && (
+                            <span className="ml-1.5 rounded bg-zinc-100 px-1 py-0.5 text-[10px] font-normal text-zinc-500">
+                              auto
+                            </span>
+                          )}
                         </span>
                         {clientId === c.id && (
                           <Check
@@ -266,7 +271,7 @@ export function Sidebar() {
               {clients.length === 0 && <option value="">None</option>}
               {clients.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name}
+                  {c.auto_created ? `${c.name} · auto` : c.name}
                 </option>
               ))}
             </select>
