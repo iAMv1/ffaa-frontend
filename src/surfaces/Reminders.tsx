@@ -26,12 +26,12 @@ const DAY_PRESETS = [7, 14, 30]
 
 export function Reminders() {
   // preview + send flow is reminders-surface only — sunk here (F-02 split);
-  // auto-refresh when the tab becomes visible or the window changes
+  // the surface only mounts on its route, so mount = visible
   const [preview, setPreview] = useState<ReminderPreview[]>([])
   const [previewDays, setPreviewDays] = useState(30)
   const [previewLoading, setPreviewLoading] = useState(false)
   const { loading, clients, rowBusy, setRowBusy, reminders, load } = useData()
-  const { setConfirm, tab } = useUi()
+  const { setConfirm } = useUi()
 
   const loadPreview = useCallback(async () => {
     setPreviewLoading(true)
@@ -43,10 +43,9 @@ export function Reminders() {
       setPreviewLoading(false)
     }
   }, [previewDays])
-
   useEffect(() => {
-    if (tab === 'reminders') loadPreview()
-  }, [tab, loadPreview])
+    loadPreview()
+  }, [loadPreview])
 
   const [draftDays, setDraftDays] = useState(previewDays)
   const [allBusy, setAllBusy] = useState(false)

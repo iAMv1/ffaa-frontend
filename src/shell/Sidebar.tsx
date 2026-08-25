@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
+import { NavLink, useNavigate } from 'react-router'
+import { toast } from 'sonner'
 import {
   ArrowsClockwise,
   Bank,
@@ -10,6 +12,7 @@ import {
   FileText,
   GitMerge,
   Plus,
+  SignOut,
   SquaresFour,
   Sidebar as SidebarIcon,
   SidebarSimple,
@@ -19,92 +22,109 @@ import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useUi } from '@/state/ui'
 import { useData } from '@/state/data'
-import type { TabItem } from '@/state/types'
+import { useAuth } from '@/state/auth'
 import { cn } from '@/lib/utils'
 
 const pillSpring = { type: 'spring' as const, stiffness: 100, damping: 20 }
 
+type NavItemDef = { to: string; label: string; icon: typeof SquaresFour; end?: boolean }
+
 function NavItem({
   item,
-  active,
   collapsed,
-  onSelect,
+  closeDrawer,
 }: {
-  item: TabItem
-  active: boolean
+  item: NavItemDef
   collapsed: boolean
-  onSelect: () => void
+  closeDrawer: () => void
 }) {
   const Icon = item.icon
-  const button = (
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-current={active ? 'page' : undefined}
-      className={cn(
-        'relative flex w-full shrink-0 items-center gap-2.5 rounded-lg px-3 py-2 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-zinc-400',
-        active
-          ? 'font-medium text-white'
-          : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900',
-        collapsed && 'md:justify-center md:px-2',
-      )}
+  const link = (
+    // children-as-function gives us isActive for the motion pill + icon fill
+    <NavLink
+      to={item.to}
+      end={item.end}
+      onClick={closeDrawer}
+      className={({ isActive }) =>
+        cn(
+          'relative flex w-full shrink-0 items-center gap-2.5 rounded-lg px-3 py-2 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-zinc-400',
+          isActive
+            ? 'font-medium text-white'
+            : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900',
+          collapsed && 'md:justify-center md:px-2',
+        )
+      }
     >
-      {active && (
-        <motion.span
-          layoutId="ffaa-nav-pill"
-          transition={pillSpring}
-          className="absolute inset-0 rounded-lg bg-zinc-900 elev-1"
-        />
+      {({ isActive }) => (
+        <>
+          {isActive && (
+            <motion.span
+              layoutId="ffaa-nav-pill"
+              transition={pillSpring}
+              className="absolute inset-0 rounded-lg bg-zinc-900 elev-1"
+            />
+          )}
+          <Icon
+            weight={isActive ? 'fill' : 'regular'}
+            className="relative z-10 h-[18px] w-[18px] shrink-0"
+          />
+          <span className={cn('relative z-10 truncate', collapsed && 'md:hidden')}>
+            {item.label}
+          </span>
+        </>
       )}
-      <Icon
-        weight={active ? 'fill' : 'regular'}
-        className="relative z-10 h-[18px] w-[18px] shrink-0"
-      />
-      <span className={cn('relative z-10 truncate', collapsed && 'md:hidden')}>
-        {item.label}
-      </span>
-    </button>
+    </NavLink>
   )
 
-  if (!collapsed) return button
+  if (!collapsed) return link
   return (
     <Tooltip>
-      <TooltipTrigger asChild>{button}</TooltipTrigger>
+      <TooltipTrigger asChild>{link}</TooltipTrigger>
       <TooltipContent side="right">{item.label}</TooltipContent>
     </Tooltip>
   )
 }
 
 export function Sidebar() {
-  const {
-    tab, setTab,
-    sidebarCollapsed, setSidebarCollapsed,
-    sidebarOpen, setSidebarOpen,
-    setShowCreateClient,
-  } = useUi()
+  const { sidebarCollapsed, setSidebarCollapsed, sidebarOpen, setSidebarOpen, setShowCreateClient } =
+    useUi()
   const {
     clients,
     clientId, setClientId,
     activeClient,
     load,
   } = useData()
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
   // collapsed-rail client popover is sidebar-only chrome
   const [clientPopoverOpen, setClientPopoverOpen] = useState(false)
 
-  const tabs: TabItem[] = useMemo(
+  // `end` on Overview so it doesn't light up for every /app/* route
+  const items: NavItemDef[] = useMemo(
     () => [
-      { id: 'overview', label: 'Overview', icon: SquaresFour },
-      ...(activeClient
-        ? [{ id: 'client' as const, label: activeClient.name, icon: Buildings }]
+      { to: '/app', label: 'Overview', icon: SquaresFour, end: true },
+      ...(activeClient && clientId != null
+        ? [{ to: `/app/clients/${clientId}`, label: activeClient.name, icon: Buildings }]
         : []),
-      { id: 'invoices', label: 'Invoices', icon: FileText },
-      { id: 'bank', label: 'Bank', icon: Bank },
-      { id: 'reconcile', label: 'Reconcile', icon: GitMerge },
-      { id: 'duplicates', label: 'Duplicates', icon: Copy },
-      { id: 'reminders', label: 'Reminders', icon: Envelope },
+      { to: '/app/invoices', label: 'Invoices', icon: FileText },
+      { to: '/app/bank', label: 'Bank', icon: Bank },
+      { to: '/app/reconcile', label: 'Reconcile', icon: GitMerge },
+      { to: '/app/duplicates', label: 'Duplicates', icon: Copy },
+      { to: '/app/reminders', label: 'Reminders', icon: Envelope },
     ],
-    [activeClient],
+    [activeClient, clientId],
   )
+
+  // mobile drawer closes when a link is picked (was a tab-state effect)
+  const closeDrawer = () => setSidebarOpen(false)
+  const signOut = async () => {
+    try {
+      await logout()
+      toast.success('Signed out')
+    } finally {
+      navigate('/login')
+    }
+  }
 
   return (
     <>
@@ -165,15 +185,14 @@ export function Sidebar() {
             </Button>
           </div>
 
-          {/* nav — sliding ledger tab */}
+          {/* nav — sliding pill follows the active route */}
           <nav className="flex flex-col gap-1">
-            {tabs.map((t) => (
+            {items.map((item) => (
               <NavItem
-                key={t.id}
-                item={t}
-                active={tab === t.id}
+                key={item.to}
+                item={item}
                 collapsed={sidebarCollapsed}
-                onSelect={() => setTab(t.id)}
+                closeDrawer={closeDrawer}
               />
             ))}
           </nav>
@@ -285,6 +304,21 @@ export function Sidebar() {
               <ArrowsClockwise className="h-3.5 w-3.5" />
               Refresh
             </Button>
+            <div className="mt-3 flex items-center justify-between gap-2 border-t border-zinc-100 pt-3">
+              <span className="truncate text-xs text-zinc-500" title={user?.email}>
+                {user?.email ?? 'Signed in'}
+              </span>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                type="button"
+                onClick={signOut}
+                aria-label="Sign out"
+                className="shrink-0 text-zinc-400 hover:text-zinc-800"
+              >
+                <SignOut className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </aside>

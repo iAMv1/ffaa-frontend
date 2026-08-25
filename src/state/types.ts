@@ -1,9 +1,3 @@
-import type { SquaresFour } from '@phosphor-icons/react'
-
-export type Tab = 'overview' | 'client' | 'invoices' | 'bank' | 'reconcile' | 'duplicates' | 'reminders'
-
-export type TabItem = { id: Tab; label: string; icon: typeof SquaresFour }
-
 export type ConfirmState = {
   title: string
   message: string

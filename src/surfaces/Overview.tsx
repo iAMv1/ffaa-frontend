@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react'
+import { useNavigate } from 'react-router'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from 'recharts'
 import { useData } from '@/state/data'
@@ -102,10 +103,11 @@ export function Overview() {
     stats,
     invoices,
     chartData,
+    clientId,
     clients,
-    clientId, setClientId,
   } = useData()
-  const { setTab, setShowCreateClient } = useUi()
+  const { setShowCreateClient } = useUi()
+  const navigate = useNavigate()
 
   const recent = [...invoices].sort((a, b) => b.id - a.id).slice(0, 7)
 
@@ -248,11 +250,7 @@ export function Overview() {
             {clients.map((c) => (
               <button
                 key={c.id}
-                type="button"
-                onClick={() => {
-                  setClientId(c.id)
-                  setTab('client')
-                }}
+                onClick={() => navigate(`/app/clients/${c.id}`)}
                 className={cn(
                   'flex w-full items-center justify-between px-5 py-3.5 text-left text-sm transition hover:bg-zinc-50',
                   clientId === c.id && 'bg-emerald-50/60',

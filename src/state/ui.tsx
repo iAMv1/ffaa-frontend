@@ -1,14 +1,13 @@
 /**
- * Session/nav context: shell chrome and navigation state that changes rarely.
- * Server data lives in DataProvider (state/data.tsx); per-surface ephemeral
- * state lives inside its only consuming surface. Split rationale: F-02/F-21.
+ * Session context: shell chrome that changes rarely. Navigation lives in the
+ * URL (react-router) since P2. Server data lives in DataProvider
+ * (state/data.tsx); per-surface ephemeral state lives inside its only
+ * consuming surface. Split rationale: F-02/F-21.
  */
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import type { ConfirmState, Tab } from '@/state/types'
+import type { ConfirmState } from '@/state/types'
 
 interface UiStore {
-  tab: Tab
-  setTab: (t: Tab) => void
   sidebarCollapsed: boolean
   setSidebarCollapsed: React.Dispatch<React.SetStateAction<boolean>>
   sidebarOpen: boolean
@@ -30,17 +29,11 @@ export function useUi() {
 }
 
 export function UiProvider({ children }: { children: ReactNode }) {
-  const [tab, setTab] = useState<Tab>('overview')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showCreateClient, setShowCreateClient] = useState(false)
   const [newClientName, setNewClientName] = useState('')
   const [confirm, setConfirm] = useState<ConfirmState | null>(null)
-
-  // mobile drawer closes on tab pick
-  useEffect(() => {
-    setSidebarOpen(false)
-  }, [tab])
 
   // Esc dismisses the create-client dialog
   useEffect(() => {
@@ -55,8 +48,6 @@ export function UiProvider({ children }: { children: ReactNode }) {
   return (
     <UiCtx.Provider
       value={{
-        tab,
-        setTab,
         sidebarCollapsed,
         setSidebarCollapsed,
         sidebarOpen,

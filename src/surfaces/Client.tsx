@@ -1,4 +1,5 @@
-import { useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useNavigate, useParams } from 'react-router'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   ArrowsClockwise,
@@ -53,7 +54,16 @@ export function Client() {
     setClients,
     load,
   } = useData()
-  const { setTab, setConfirm } = useUi()
+  const { setConfirm } = useUi()
+  const navigate = useNavigate()
+
+  // Deep-link contract (plan rev 12): the :id param seeds the shared clientId
+  // context on mount; afterwards sidebar selection stays authoritative.
+  const { id } = useParams()
+  useEffect(() => {
+    const parsed = Number(id)
+    if (Number.isInteger(parsed) && parsed > 0 && parsed !== clientId) setClientId(parsed)
+  }, [id, clientId, setClientId])
 
   const [emailSaved, setEmailSaved] = useState(false)
   const savedTimer = useRef<number | null>(null)
@@ -237,7 +247,7 @@ export function Client() {
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => setTab('invoices')}
+              onClick={() => navigate('/app/invoices')}
               className="h-7 gap-1.5 px-2 text-xs font-medium text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
             >
               <ArrowsClockwise className="size-3" />
@@ -308,7 +318,7 @@ export function Client() {
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => setTab('bank')}
+              onClick={() => navigate('/app/bank')}
               className="h-7 gap-1.5 px-2 text-xs font-medium text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
             >
               <ArrowsClockwise className="size-3" />
@@ -372,7 +382,7 @@ export function Client() {
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => setTab('duplicates')}
+              onClick={() => navigate('/app/duplicates')}
               className="h-7 gap-1.5 px-2 text-xs font-medium text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
             >
               <ArrowsClockwise className="size-3" />

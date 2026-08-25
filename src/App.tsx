@@ -1,5 +1,6 @@
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
 import { CircleNotch, WarningCircle } from '@phosphor-icons/react'
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useOutlet } from 'react-router'
 import { Toaster, toast } from 'sonner'
 import {
   AlertDialog,
@@ -24,6 +25,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { DataProvider, useData } from '@/state/data'
 import { UiProvider, useUi } from '@/state/ui'
+import { AuthProvider, ProtectedRoute } from '@/state/auth'
 import { Sidebar } from '@/shell/Sidebar'
 import { TopBar } from '@/shell/TopBar'
 import { Overview } from '@/surfaces/Overview'
@@ -33,8 +35,16 @@ import { Bank } from '@/surfaces/Bank'
 import { Reconcile } from '@/surfaces/Reconcile'
 import { Duplicates } from '@/surfaces/Duplicates'
 import { Reminders } from '@/surfaces/Reminders'
+import { Landing } from '@/pages/Landing'
+import { Pricing } from '@/pages/Pricing'
+import { Login } from '@/pages/Login'
+import { Register } from '@/pages/Register'
+import { ForgotPassword } from '@/pages/ForgotPassword'
+import { ResetPassword } from '@/pages/ResetPassword'
+import { Settings } from '@/pages/Settings'
+import { Billing } from '@/pages/Billing'
 
-// crossfade between tabs — explains state change, nothing bounces
+// crossfade between routes — explains the surface change, nothing bounces
 const TAB_EASE: [number, number, number, number] = [0.32, 0.72, 0, 1]
 const tabMotion = {
   initial: { opacity: 0, y: 6 },
@@ -46,17 +56,73 @@ const API_PORT = 8000
 
 export default function App() {
   return (
-    <DataProvider>
-      <UiProvider>
-        <Shell />
-      </UiProvider>
-    </DataProvider>
+    <MotionConfig reducedMotion="user">
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* public */}
+            <Route path="/" element={<Landing />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+
+            {/* protected shell — server data + shell chrome live only here so
+                public pages never trigger unauthenticated API fetches */}
+            <Route
+              path="/app"
+              element={
+                <ProtectedRoute>
+                  <DataProvider>
+                    <UiProvider>
+                      <AppShell />
+                    </UiProvider>
+                  </DataProvider>
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Overview />} />
+              <Route path="clients/:id" element={<Client />} />
+              <Route path="invoices" element={<Invoices />} />
+              <Route path="bank" element={<Bank />} />
+              <Route path="reconcile" element={<Reconcile />} />
+              <Route path="duplicates" element={<Duplicates />} />
+              <Route path="reminders" element={<Reminders />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="billing" element={<Billing />} />
+            </Route>
+
+            {/* everything else lands inside the app */}
+            <Route path="*" element={<Navigate to="/app" replace />} />
+          </Routes>
+
+          <Toaster
+            position="bottom-center"
+            theme="light"
+            toastOptions={{
+              style: {
+                fontFamily: 'var(--font-sans)',
+                fontSize: '13px',
+                background: 'var(--color-surface)',
+                color: 'var(--color-ink)',
+                border: '1px solid var(--color-line)',
+                borderRadius: '10px',
+                boxShadow: '0 12px 40px -16px rgba(24, 24, 27, 0.25)',
+              },
+            }}
+          />
+        </BrowserRouter>
+      </AuthProvider>
+    </MotionConfig>
   )
 }
 
-function Shell() {
+
+function AppShell() {
+  const location = useLocation()
+  const outlet = useOutlet()
   const {
-    tab,
     sidebarCollapsed,
     confirm, setConfirm,
     showCreateClient, setShowCreateClient,
@@ -82,7 +148,6 @@ function Shell() {
   }
 
   return (
-    <MotionConfig reducedMotion="user">
     <div className="relative min-h-[100dvh] bg-canvas text-zinc-900">
       <div
         className={`relative mx-auto grid min-h-[100dvh] max-w-[1400px] grid-cols-1 gap-0 transition-[grid-template-columns] duration-200 ${
@@ -104,42 +169,10 @@ function Shell() {
             </div>
           )}
 
-          <AnimatePresence mode="wait">
-            {tab === 'overview' && (
-              <motion.div key="overview" {...tabMotion}>
-                <Overview />
-              </motion.div>
-            )}
-            {tab === 'client' && (
-              <motion.div key="client" {...tabMotion}>
-                <Client />
-              </motion.div>
-            )}
-            {tab === 'invoices' && (
-              <motion.div key="invoices" {...tabMotion}>
-                <Invoices />
-              </motion.div>
-            )}
-            {tab === 'bank' && (
-              <motion.div key="bank" {...tabMotion}>
-                <Bank />
-              </motion.div>
-            )}
-            {tab === 'reconcile' && (
-              <motion.div key="reconcile" {...tabMotion}>
-                <Reconcile />
-              </motion.div>
-            )}
-            {tab === 'duplicates' && (
-              <motion.div key="duplicates" {...tabMotion}>
-                <Duplicates />
-              </motion.div>
-            )}
-            {tab === 'reminders' && (
-              <motion.div key="reminders" {...tabMotion}>
-                <Reminders />
-              </motion.div>
-            )}
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div key={location.pathname} {...tabMotion}>
+              {outlet}
+            </motion.div>
           </AnimatePresence>
         </main>
       </div>
@@ -233,22 +266,6 @@ function Shell() {
         </DialogContent>
       </Dialog>
 
-      <Toaster
-        position="bottom-center"
-        theme="light"
-        toastOptions={{
-          style: {
-            fontFamily: 'var(--font-sans)',
-            fontSize: '13px',
-            background: 'var(--color-surface)',
-            color: 'var(--color-ink)',
-            border: '1px solid var(--color-line)',
-            borderRadius: '10px',
-            boxShadow: '0 12px 40px -16px rgba(24, 24, 27, 0.25)',
-          },
-        }}
-      />
     </div>
-    </MotionConfig>
   )
 }

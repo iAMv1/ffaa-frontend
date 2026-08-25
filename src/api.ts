@@ -161,3 +161,61 @@ export const api = {
     URL.revokeObjectURL(a.href)
   },
 }
+
+// ── Auth (fastapi-users cookie transport) ────────────────────────────────
+// Session lives in an httpOnly cookie (`ffaaauth`); same-origin fetch carries
+// it with default credentials — nothing token-shaped is ever stored in JS.
+
+export type AuthUser = {
+  id: number | string
+  email: string
+  is_active?: boolean
+  is_superuser?: boolean
+}
+
+/** fastapi-users errors are JSON `{ detail: string }`; surface the detail text. */
+async function authReq<T>(path: string, init: RequestInit): Promise<T> {
+  const r = await fetch(`${BASE}${path}`, { credentials: 'same-origin', ...init })
+  if (!r.ok) {
+    let msg = r.statusText
+    try {
+      const body = await r.json()
+      msg = typeof body.detail === 'string' ? body.detail : JSON.stringify(body.detail ?? body)
+    } catch {
+      /* keep statusText */
+    }
+    throw new Error(msg)
+  }
+  // login/logout answer 202/204 with no body; don't force-parse empties
+  if (r.status === 204 || r.status === 202) return undefined as T
+  return r.json()
+}
+
+const authJson = (method: string, body: unknown): RequestInit => ({
+  method,
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(body),
+})
+
+export const auth = {
+  register: (email: string, password: string) =>
+    authReq<AuthUser>('/auth/register', authJson('POST', { email, password })),
+  // fastapi-users cookie login is FORM-encoded `username` + `password`
+  login: async (email: string, password: string) => {
+    await authReq<undefined>('/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ username: email, password }).toString(),
+    })
+  },
+  logout: () => authReq<undefined>('/auth/logout', { method: 'POST' }),
+  me: () => authReq<AuthUser>('/auth/me', {}),
+  forgotPassword: (email: string) =>
+    authReq<undefined>('/auth/forgot-password', authJson('POST', { email })),
+  resetPassword: (token: string, password: string) =>
+    authReq<undefined>('/auth/reset-password', authJson('POST', { token, password })),
+  /** fastapi-users current-user update. NOTE(P2): confirm exact mount path
+   *  with the backend — convention is `/auth/users/me` for the users router. */
+  updateMe: (patch: Partial<{ email: string; password: string }>) =>
+    authReq<AuthUser>('/auth/users/me', authJson('PATCH', patch)),
+}
