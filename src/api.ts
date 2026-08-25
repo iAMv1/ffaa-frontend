@@ -209,7 +209,8 @@ export const auth = {
     })
   },
   logout: () => authReq<undefined>('/auth/logout', { method: 'POST' }),
-  me: () => authReq<AuthUser>('/auth/me', {}),
+  // session status lives at /me (P1 explicit route), not /auth/me
+  me: () => authReq<AuthUser>('/me', {}),
   forgotPassword: (email: string) =>
     authReq<undefined>('/auth/forgot-password', authJson('POST', { email })),
   resetPassword: (token: string, password: string) =>

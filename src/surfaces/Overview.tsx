@@ -1,10 +1,12 @@
 import { useEffect, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
+import { Plus } from '@phosphor-icons/react'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from 'recharts'
 import { useData } from '@/state/data'
 import { useUi } from '@/state/ui'
 import { EmptyHint, money, statusClass } from '@/lib/ui-helpers'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
@@ -242,34 +244,52 @@ export function Overview() {
         </section>
       </div>
 
-      {/* quick client entry kept for scope drill-down */}
-      {!loading && clients.length > 0 && (
+      {/* quick client entry kept for scope drill-down; also the first-run
+          onboarding path — a new tenant must be able to mint client #1 */}
+      {!loading && (
         <section>
           <SectionHead kicker="Directory" title="Clients" />
-          <div className="surface divide-y divide-zinc-100 rounded-xl">
-            {clients.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => navigate(`/app/clients/${c.id}`)}
-                className={cn(
-                  'flex w-full items-center justify-between px-5 py-3.5 text-left text-sm transition hover:bg-zinc-50',
-                  clientId === c.id && 'bg-emerald-50/60',
-                )}
+          {clients.length === 0 ? (
+            <div className="surface flex flex-col items-center gap-3 rounded-xl px-5 py-10 text-center">
+              <p className="text-sm text-zinc-500">
+                No clients yet. Add your first client to start filing invoices and bank statements.
+              </p>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => setShowCreateClient(true)}
+                className="bg-zinc-900 text-xs font-medium text-white hover:bg-zinc-800"
               >
-                <span className="font-medium text-zinc-800">{c.name}</span>
-                {clientId === c.id && (
-                  <span className="text-[11px] font-medium text-emerald-700">Active</span>
-                )}
+                <Plus className="h-3.5 w-3.5" weight="bold" />
+                Add your first client
+              </Button>
+            </div>
+          ) : (
+            <div className="surface divide-y divide-zinc-100 rounded-xl">
+              {clients.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => navigate(`/app/clients/${c.id}`)}
+                  className={cn(
+                    'flex w-full items-center justify-between px-5 py-3.5 text-left text-sm transition hover:bg-zinc-50',
+                    clientId === c.id && 'bg-emerald-50/60',
+                  )}
+                >
+                  <span className="font-medium text-zinc-800">{c.name}</span>
+                  {clientId === c.id && (
+                    <span className="text-[11px] font-medium text-emerald-700">Active</span>
+                  )}
+                </button>
+              ))}
+              <button
+                type="button"
+                className="flex w-full items-center gap-2 px-5 py-3 text-left text-sm text-zinc-500 transition hover:bg-zinc-50 hover:text-zinc-800"
+                onClick={() => setShowCreateClient(true)}
+              >
+                Add client
               </button>
-            ))}
-            <button
-              type="button"
-              className="flex w-full items-center gap-2 px-5 py-3 text-left text-sm text-zinc-500 transition hover:bg-zinc-50 hover:text-zinc-800"
-              onClick={() => setShowCreateClient(true)}
-            >
-              Add client
-            </button>
-          </div>
+            </div>
+          )}
         </section>
       )}
     </div>
