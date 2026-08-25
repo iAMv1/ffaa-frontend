@@ -1,5 +1,7 @@
-// P5 expands this page (profile editing, full account surface). P2 ships the
-// scoped essentials: identity display + password change via fastapi-users.
+// Account settings: email + password changes via PATCH /api/v1/auth/account.
+// The backend requires current_password for either change (account-takeover
+// guard), so both forms ask for it. JWT sessions stay valid after a password
+// change — no forced re-login.
 import { useState, type FormEvent } from 'react'
 import { CircleNotch } from '@phosphor-icons/react'
 import { toast } from 'sonner'
@@ -14,53 +16,115 @@ const fieldLabel =
   'text-[11px] font-medium uppercase tracking-wide text-zinc-400'
 
 export function Settings() {
-  const { user } = useAuth()
+  const { user, refresh } = useAuth()
+
+  const [email, setEmail] = useState('')
+  const [emailPassword, setEmailPassword] = useState('')
+  const [emailBusy, setEmailBusy] = useState(false)
+
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [pwBusy, setPwBusy] = useState(false)
+  const [pwError, setPwError] = useState<string | null>(null)
 
-  const onSubmit = async (e: FormEvent) => {
+  const newEmail = email.trim()
+  const onEmailSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (password !== confirmPassword) {
-      setError('Passwords do not match')
+    if (!emailPassword) {
+      toast.error('Current password is required to change your email')
       return
     }
-    setBusy(true)
-    setError(null)
+    setEmailBusy(true)
     try {
-      // NOTE(P2): hits PATCH /api/v1/auth/users/me (fastapi-users current-user
-      // update). If the backend mounts the users router elsewhere, adjust
-      // `auth.updateMe` in src/api.ts — the route is not yet confirmed.
-      await auth.updateMe({ password })
+      await auth.updateAccount({
+        email: newEmail,
+        current_password: emailPassword,
+      })
+      await refresh()
+      setEmail('')
+      setEmailPassword('')
+      toast.success('Email updated')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Update failed')
+    } finally {
+      setEmailBusy(false)
+    }
+  }
+
+  const onPasswordSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    if (password !== confirmPassword) {
+      setPwError('Passwords do not match')
+      return
+    }
+    setPwBusy(true)
+    setPwError(null)
+    try {
+      await auth.updateAccount({
+        new_password: password,
+        current_password: currentPassword,
+      })
       setPassword('')
       setConfirmPassword('')
+      setCurrentPassword('')
       toast.success('Password updated')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Update failed')
     } finally {
-      setBusy(false)
+      setPwBusy(false)
     }
   }
 
   return (
     <div className="space-y-6">
       <Card className="gap-0 rounded-2xl border-zinc-200 bg-white px-6 py-5 shadow-sm">
-        <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">Profile</p>
-        <div className="mt-4 space-y-1.5">
-          <Label htmlFor="settings-email" className={fieldLabel}>
-            Email
-          </Label>
-          <Input id="settings-email" type="email" value={user?.email ?? ''} disabled />
-        </div>
-        <p className="mt-2 text-xs leading-relaxed text-zinc-500">
-          Email changes arrive with the full settings pass in P5.
+        <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+          Profile
         </p>
+        <form onSubmit={onEmailSubmit} className="mt-4 max-w-sm space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="settings-email" className={fieldLabel}>
+              Email
+            </Label>
+            <Input
+              id="settings-email"
+              type="email"
+              placeholder={user?.email ?? ''}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="settings-email-password" className={fieldLabel}>
+              Current password
+            </Label>
+            <Input
+              id="settings-email-password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={emailPassword}
+              onChange={(e) => setEmailPassword(e.target.value)}
+            />
+          </div>
+          <Button
+            type="submit"
+            size="sm"
+            disabled={emailBusy || !newEmail || !emailPassword}
+            className="bg-zinc-900 text-xs font-medium text-white hover:bg-zinc-800"
+          >
+            {emailBusy && <CircleNotch className="h-3.5 w-3.5 animate-spin" />}
+            Update email
+          </Button>
+        </form>
       </Card>
 
       <Card className="gap-0 rounded-2xl border-zinc-200 bg-white px-6 py-5 shadow-sm">
-        <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">Password</p>
-        <form onSubmit={onSubmit} className="mt-4 max-w-sm space-y-4">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+          Password
+        </p>
+        <form onSubmit={onPasswordSubmit} className="mt-4 max-w-sm space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="settings-password" className={fieldLabel}>
               New password
@@ -88,14 +152,29 @@ export function Settings() {
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
           </div>
-          {error && <p className="text-xs leading-relaxed text-red-700">{error}</p>}
+          <div className="space-y-1.5">
+            <Label htmlFor="settings-current" className={fieldLabel}>
+              Current password
+            </Label>
+            <Input
+              id="settings-current"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+          </div>
+          {pwError && <p className="text-xs leading-relaxed text-red-700">{pwError}</p>}
           <Button
             type="submit"
             size="sm"
-            disabled={busy || !password || !confirmPassword}
+            disabled={
+              pwBusy || !password || !confirmPassword || !currentPassword
+            }
             className="bg-zinc-900 text-xs font-medium text-white hover:bg-zinc-800"
           >
-            {busy && <CircleNotch className="h-3.5 w-3.5 animate-spin" />}
+            {pwBusy && <CircleNotch className="h-3.5 w-3.5 animate-spin" />}
             Update password
           </Button>
         </form>

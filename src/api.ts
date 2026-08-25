@@ -214,8 +214,11 @@ export const auth = {
     authReq<undefined>('/auth/forgot-password', authJson('POST', { email })),
   resetPassword: (token: string, password: string) =>
     authReq<undefined>('/auth/reset-password', authJson('POST', { token, password })),
-  /** fastapi-users current-user update. NOTE(P2): confirm exact mount path
-   *  with the backend — convention is `/auth/users/me` for the users router. */
-  updateMe: (patch: Partial<{ email: string; password: string }>) =>
-    authReq<AuthUser>('/auth/users/me', authJson('PATCH', patch)),
+  /** Account self-service: email and/or password change; the backend requires
+   *  current_password for either (account-takeover guard). */
+  updateAccount: (patch: {
+    email?: string
+    new_password?: string
+    current_password?: string
+  }) => authReq<AuthUser>('/auth/account', authJson('PATCH', patch)),
 }

@@ -26,6 +26,8 @@ interface AuthStore {
   logout: () => Promise<void>
   forgotPassword: (email: string) => Promise<void>
   resetPassword: (token: string, password: string) => Promise<void>
+  /** Re-fetch /auth/me into state — used after profile changes. */
+  refresh: () => Promise<void>
 }
 
 const AuthCtx = createContext<AuthStore | null>(null)
@@ -79,6 +81,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  // Re-fetch /auth/me into state — used after profile changes (Settings).
+  const refresh = useCallback(async () => {
+    setUser(await auth.me())
+  }, [])
+
   const value = useMemo<AuthStore>(
     () => ({
       user,
@@ -88,8 +95,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       forgotPassword: auth.forgotPassword,
       resetPassword: auth.resetPassword,
+      refresh,
     }),
-    [user, booting, login, register, logout],
+    [user, booting, login, register, logout, refresh],
   )
 
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>
