@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { CircleNotch } from '@phosphor-icons/react'
 import { Link, Navigate, useNavigate } from 'react-router'
 import { toast } from 'sonner'
@@ -12,6 +12,15 @@ const fieldLabel =
   'text-[11px] font-medium uppercase tracking-wide text-zinc-400'
 
 export function Register() {
+
+  // Social buttons mirror Login — only providers configured in backend env.
+  const [socialProviders, setSocialProviders] = useState<string[]>([])
+  useEffect(() => {
+    fetch('/api/v1/auth/providers')
+      .then((r) => (r.ok ? r.json() : { providers: [] }))
+      .then((d) => setSocialProviders(d.providers ?? []))
+      .catch(() => {})
+  }, [])
   const { user, booting, register } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
@@ -56,6 +65,24 @@ export function Register() {
       }
     >
       <form onSubmit={onSubmit} className="space-y-4">
+        {socialProviders.length > 0 && (
+          <div className="space-y-2">
+            {socialProviders.map((p) => (
+              <a
+                key={p}
+                href={`/api/v1/auth/${p}/authorize`}
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50"
+              >
+                Continue with {p.charAt(0).toUpperCase() + p.slice(1)}
+              </a>
+            ))}
+            <div className="flex items-center gap-3 pt-1">
+              <div className="h-px flex-1 bg-zinc-100" />
+              <span className="text-[11px] uppercase tracking-wide text-zinc-400">or email</span>
+              <div className="h-px flex-1 bg-zinc-100" />
+            </div>
+          </div>
+        )}
         <div className="space-y-1.5">
           <Label htmlFor="register-email" className={fieldLabel}>
             Email
