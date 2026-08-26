@@ -10,12 +10,14 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
 import { CircleNotch } from '@phosphor-icons/react'
-import { Navigate, useLocation } from 'react-router'
-import { auth, type AuthUser } from '@/api'
+import { Navigate, useLocation, useNavigate } from 'react-router'
+import { toast } from 'sonner'
+import { auth, onUnauthorized, type AuthUser } from '@/api'
 
 interface AuthStore {
   user: AuthUser | null
@@ -41,6 +43,28 @@ export function useAuth() {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [booting, setBooting] = useState(true)
+  const navigate = useNavigate()
+  // The boot probe legitimately 401s for signed-out visitors; the interceptor
+  // must not treat that as "session expired" (no toast, no redirect).
+  const bootedRef = useRef(false)
+
+  // Global 401 interceptor (journey G4): any non-auth-endpoint API call that
+  // comes back 401 after boot clears the session and evicts the user from the
+  // shell to /login, preserving intent via state.from.
+  useEffect(
+    () =>
+      onUnauthorized(() => {
+        setUser(null)
+        if (!bootedRef.current) return
+        if (!window.location.pathname.startsWith('/app')) return
+        toast.error('Session expired — please sign in again')
+        navigate('/login', {
+          replace: true,
+          state: { from: window.location.pathname },
+        })
+      }),
+    [navigate],
+  )
 
   // One boot probe; a 401 just means "signed out", not an error worth surfacing.
   useEffect(() => {
@@ -52,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
       .catch(() => {})
       .finally(() => {
+        bootedRef.current = true
         if (alive) setBooting(false)
       })
     return () => {

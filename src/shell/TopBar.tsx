@@ -1,5 +1,5 @@
-import { useLocation } from 'react-router'
-import { DownloadSimple, List } from '@phosphor-icons/react'
+import { useLocation, useNavigate } from 'react-router'
+import { CreditCard, DownloadSimple, Gear, List } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { api } from '@/api'
@@ -36,6 +36,7 @@ function section(pathname: string): {
 
 export function TopBar() {
   const { setSidebarOpen } = useUi()
+  const navigate = useNavigate()
   const location = useLocation()
   const sec = section(location.pathname)
   const { stats, scopeAll, activeClient, clientId } = useData()
@@ -95,6 +96,26 @@ export function TopBar() {
               {activeClient.name}
             </span>
           )}
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            type="button"
+            onClick={() => navigate('/app/settings')}
+            aria-label="Settings"
+            className="text-zinc-500 hover:text-zinc-900"
+          >
+            <Gear className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            type="button"
+            onClick={() => navigate('/app/billing')}
+            aria-label="Billing"
+            className="text-zinc-500 hover:text-zinc-900"
+          >
+            <CreditCard className="h-4 w-4" />
+          </Button>
           <Button
             variant="outline"
             size="sm"

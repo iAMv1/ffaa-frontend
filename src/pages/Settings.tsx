@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { auth } from '@/api'
 import { useAuth } from '@/state/auth'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -79,9 +80,19 @@ export function Settings() {
   return (
     <div className="space-y-6">
       <Card className="gap-0 rounded-2xl border-zinc-200 bg-white px-6 py-5 shadow-sm">
-        <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">
-          Profile
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+            Profile
+          </p>
+          {user?.is_verified === false && (
+            <Badge
+              variant="outline"
+              className="border-transparent bg-amber-50 px-2 py-0 text-[11px] font-medium text-amber-800 ring-1 ring-inset ring-amber-200"
+            >
+              Email unverified
+            </Badge>
+          )}
+        </div>
         <form onSubmit={onEmailSubmit} className="mt-4 max-w-sm space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="settings-email" className={fieldLabel}>

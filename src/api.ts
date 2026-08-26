@@ -1,11 +1,53 @@
+import { ApiError, apiErrorFrom } from './lib/api-error'
+
 const BASE = '/api/v1'
+
+// Public auth endpoints whose 4xx belong in the login/register form — they are
+// exempt from the global 401 interceptor (journey G4).
+const PUBLIC_AUTH_PATH: Record<string, true> = {
+  '/auth/login': true,
+  '/auth/register': true,
+  '/auth/forgot-password': true,
+  '/auth/reset-password': true,
+}
+
+/**
+ * Session-expiry plumbing (G4): AuthProvider registers one handler; every
+ * non-exempt 401 fires it. Returns an unsubscribe function.
+ */
+let unauthorizedCb: (() => void) | null = null
+export function onUnauthorized(cb: () => void): () => void {
+  unauthorizedCb = cb
+  return () => {
+    if (unauthorizedCb === cb) unauthorizedCb = null
+  }
+}
+
+/**
+ * Upgrade-modal plumbing (G5): AppShell registers one handler; any response
+ * carrying the entitlement gate's `upgrade` flag fires it with the parsed
+ * ApiError. Returns an unsubscribe function.
+ */
+let upgradeCb: ((e: ApiError) => void) | null = null
+export function onUpgrade(cb: (e: ApiError) => void): () => void {
+  upgradeCb = cb
+  return () => {
+    if (upgradeCb === cb) upgradeCb = null
+  }
+}
+
+/** Shared non-2xx path: parse into ApiError, fire the 401/402 hooks, throw. */
+async function fail(path: string, r: Response): Promise<never> {
+  const raw = await r.text()
+  const err = apiErrorFrom(r.status, r.statusText, raw)
+  if (r.status === 401 && !PUBLIC_AUTH_PATH[path]) unauthorizedCb?.()
+  if (err.upgrade) upgradeCb?.(err)
+  throw err
+}
 
 async function j<T>(path: string, init?: RequestInit): Promise<T> {
   const r = await fetch(`${BASE}${path}`, init)
-  if (!r.ok) {
-    const t = await r.text()
-    throw new Error(t || r.statusText)
-  }
+  if (!r.ok) await fail(path, r)
   if (r.headers.get('content-type')?.includes('xml')) {
     return (await r.text()) as T
   }
@@ -141,17 +183,7 @@ export const api = {
   downloadTally: async (client_id?: number) => {
     const url = `${BASE}/export-tally${client_id != null ? `?client_id=${client_id}` : ''}`
     const r = await fetch(url)
-    if (!r.ok) {
-      let msg = r.statusText
-      try {
-        const j = await r.json()
-        msg = typeof j.detail === 'string' ? j.detail : JSON.stringify(j.detail || j)
-      } catch {
-        /* keep statusText */
-      }
-      if (r.status === 404) throw new Error(msg || 'No approved invoices to export')
-      throw new Error(msg || 'Tally export failed')
-    }
+    if (!r.ok) await fail('/export-tally', r)
     const blob = await r.blob()
     const filename = r.headers.get('content-disposition')?.match(/filename="?([^"]+)"?/)?.[1] || 'tally_import.xml'
     const a = document.createElement('a')
@@ -171,21 +203,19 @@ export type AuthUser = {
   email: string
   is_active?: boolean
   is_superuser?: boolean
+  /**
+   * Hand-added (M7): GET /me returns UserRead with `is_verified`, but
+   * schema.gen.ts has no UserRead component yet, so `gen:api` cannot source
+   * this field. Drop this line in favour of the generated alias when the
+   * backend's openapi export includes it.
+   */
+  is_verified?: boolean
 }
 
-/** fastapi-users errors are JSON `{ detail: string }`; surface the detail text. */
+/** Non-2xx → ApiError; detail duality (string vs validation array) handled by apiErrorFrom. */
 async function authReq<T>(path: string, init: RequestInit): Promise<T> {
   const r = await fetch(`${BASE}${path}`, { credentials: 'same-origin', ...init })
-  if (!r.ok) {
-    let msg = r.statusText
-    try {
-      const body = await r.json()
-      msg = typeof body.detail === 'string' ? body.detail : JSON.stringify(body.detail ?? body)
-    } catch {
-      /* keep statusText */
-    }
-    throw new Error(msg)
-  }
+  if (!r.ok) await fail(path, r)
   // login/logout answer 202/204 with no body; don't force-parse empties
   if (r.status === 204 || r.status === 202) return undefined as T
   return r.json()

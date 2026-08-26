@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
 import { CircleNotch, WarningCircle } from '@phosphor-icons/react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useOutlet } from 'react-router'
@@ -26,6 +27,9 @@ import { Label } from '@/components/ui/label'
 import { DataProvider, useData } from '@/state/data'
 import { UiProvider, useUi } from '@/state/ui'
 import { AuthProvider, ProtectedRoute } from '@/state/auth'
+import { onUpgrade } from '@/api'
+import type { ApiError } from '@/lib/api-error'
+import { UpgradeModal } from '@/components/UpgradeModal'
 import { Sidebar } from '@/shell/Sidebar'
 import { TopBar } from '@/shell/TopBar'
 import { Overview } from '@/surfaces/Overview'
@@ -52,15 +56,14 @@ const tabMotion = {
   exit: { opacity: 0 },
   transition: { duration: 0.2, ease: TAB_EASE },
 }
-const API_PORT = 8000
 
 export default function App() {
   return (
     <MotionConfig reducedMotion="user">
-      <AuthProvider>
-        <BrowserRouter>
+      {/* AuthProvider needs the router context (401 interceptor navigates) */}
+      <BrowserRouter>
+        <AuthProvider>
           <Routes>
-            {/* public */}
             <Route path="/" element={<Landing />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/login" element={<Login />} />
@@ -112,8 +115,8 @@ export default function App() {
               },
             }}
           />
-        </BrowserRouter>
-      </AuthProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </MotionConfig>
   )
 }
@@ -133,6 +136,11 @@ function AppShell() {
     newClientName, setNewClientName,
     createClient,
   } = useData()
+
+  // Global 402 handler: the entitlement gate's `upgrade` payload opens the
+  // UpgradeModal from anywhere (journey G5).
+  const [upgradeError, setUpgradeError] = useState<ApiError | null>(null)
+  useEffect(() => onUpgrade(setUpgradeError), [])
 
   const handleCreateClient = async (e: React.FormEvent) => {
     try {
@@ -163,7 +171,7 @@ function AppShell() {
             <div className="mb-5 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
               <WarningCircle className="mt-0.5 h-4 w-4 shrink-0" weight="fill" />
               <span>
-                Cannot reach API on port {API_PORT}.{' '}
+                Cannot reach the API — check your connection.{' '}
                 <span className="num text-xs opacity-80">{err.slice(0, 100)}</span>
               </span>
             </div>
@@ -213,6 +221,11 @@ function AppShell() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* upgrade — global 402 interstitial, fired from api.ts's onUpgrade hook */}
+      {upgradeError && (
+        <UpgradeModal error={upgradeError} onClose={() => setUpgradeError(null)} />
+      )}
 
       {/* create client — dialog chrome in ui, action in data */}
       <Dialog open={showCreateClient} onOpenChange={setShowCreateClient}>

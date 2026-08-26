@@ -5,7 +5,9 @@
  */
 import type { Dispatch, FormEvent, ReactNode, SetStateAction } from 'react'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import { api, type BankRow, type Client, type DuplicateFlag, type EmailReminder, type Invoice, type Reconciliation } from '@/api'
+import { ApiError } from '@/lib/api-error'
 
 interface DataStore {
   clients: Client[]
@@ -92,7 +94,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setFolders({})
       }
     } catch (e) {
-      setErr(e instanceof Error ? e.message : String(e))
+      if (e instanceof ApiError) {
+        // HTTP-class failure: the offline banner would lie. 401 belongs to the
+        // session interceptor (auth.tsx); everything else surfaces as a toast.
+        if (e.status !== 401) toast.error(e.message)
+      } else {
+        // fetch itself failed (TypeError) — genuine reachability problem.
+        setErr(e instanceof Error ? e.message : String(e))
+      }
     } finally {
       setLoading(false)
     }

@@ -222,6 +222,9 @@ export function Client() {
                     try {
                       await api.deleteClient(activeClient.id)
                       toast.success(`Deleted ${activeClient.name}`)
+                      // Leave the dead URL before anything re-seeds clientId
+                      // from the now-stale :id param (journey G7).
+                      navigate('/app')
                       setClientId(null)
                       await load()
                     } catch (e) {

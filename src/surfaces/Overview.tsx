@@ -1,6 +1,6 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
-import { Plus } from '@phosphor-icons/react'
+import { Check, Plus, X } from '@phosphor-icons/react'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from 'recharts'
 import { useData } from '@/state/data'
@@ -97,6 +97,80 @@ function ActivitySkeleton() {
     </div>
   )
 }
+
+const ONBOARD_DISMISS_KEY = 'ffaa.onboarding.dismissed'
+
+type OnboardingStep = {
+  label: string
+  done: boolean
+  cta: string
+  action: () => void
+}
+
+/** First-run checklist (journey §4): derived from live counts — no wizard,
+ *  no server state. Dismissal persists in localStorage; the card vanishes for
+ *  good once every step's condition holds. */
+function OnboardingChecklist({ steps }: { steps: OnboardingStep[] }) {
+  const complete = steps.every((s) => s.done)
+  const [dismissed, setDismissed] = useState(
+    () => localStorage.getItem(ONBOARD_DISMISS_KEY) === '1',
+  )
+  if (complete || dismissed) return null
+  const dismiss = () => {
+    setDismissed(true)
+    try {
+      localStorage.setItem(ONBOARD_DISMISS_KEY, '1')
+    } catch {
+      /* private mode etc. — session-only dismissal is fine */
+    }
+  }
+  return (
+    <section className="surface relative rounded-xl px-6 py-5">
+      <button
+        type="button"
+        onClick={dismiss}
+        aria-label="Dismiss getting-started checklist"
+        className="absolute right-3 top-3 rounded-md p-1 text-zinc-400 outline-none transition hover:bg-zinc-100 hover:text-zinc-700 focus-visible:ring-2 focus-visible:ring-zinc-400"
+      >
+        <X className="h-3.5 w-3.5" />
+      </button>
+      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400">
+        Get started
+      </p>
+      <ol className="mt-3 space-y-2">
+        {steps.map((s, i) => (
+          <li key={s.label} className="flex items-center gap-3">
+            <span
+              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
+                s.done ? 'bg-emerald-600 text-white' : 'bg-zinc-100 text-zinc-500 ring-1 ring-inset ring-zinc-200'
+              }`}
+            >
+              {s.done ? <Check weight="bold" className="h-3 w-3" /> : i + 1}
+            </span>
+            <span
+              className={`flex-1 truncate text-sm ${
+                s.done ? 'text-zinc-400 line-through' : 'font-medium text-zinc-800'
+              }`}
+            >
+              {s.label}
+            </span>
+            {!s.done && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={s.action}
+                className="h-7 border-zinc-200 px-2.5 text-xs font-medium text-zinc-700"
+              >
+                {s.cta}
+              </Button>
+            )}
+          </li>
+        ))}
+      </ol>
+    </section>
+  )
+}
 export function Overview() {
   const {
     loading,
@@ -113,6 +187,27 @@ export function Overview() {
 
   const recent = [...invoices].sort((a, b) => b.id - a.id).slice(0, 7)
 
+  const onboardingSteps: OnboardingStep[] = [
+    {
+      label: 'Add your first client',
+      done: clients.length > 0,
+      cta: 'Add client',
+      action: () => setShowCreateClient(true),
+    },
+    {
+      label: 'Upload your first invoice',
+      done: invoices.length > 0,
+      cta: 'Upload',
+      action: () => navigate('/app/invoices'),
+    },
+    {
+      label: 'Approve an extraction',
+      done: stats.approved > 0,
+      cta: 'Review queue',
+      action: () => navigate('/app/invoices'),
+    },
+  ]
+
   return (
     <div className="space-y-12">
       {/* scope switch */}
@@ -126,6 +221,7 @@ export function Overview() {
         />
       </div>
 
+      {!loading && <OnboardingChecklist steps={onboardingSteps} />}
       {/* metrics — asymmetric hairline band, the numbers are the hero */}
       {loading ? (
         <MetricSkeleton />
