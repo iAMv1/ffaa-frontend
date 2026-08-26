@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
-import { Check, Plus, X } from '@phosphor-icons/react'
+import { ArrowRight, Check, Plus, X } from '@phosphor-icons/react'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from 'recharts'
 import { useData } from '@/state/data'
@@ -139,31 +139,27 @@ function OnboardingChecklist({ steps }: { steps: OnboardingStep[] }) {
       </p>
       <ol className="mt-3 space-y-2">
         {steps.map((s, i) => (
-          <li key={s.label} className="flex items-center gap-3">
-            <span
-              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
-                s.done ? 'bg-emerald-600 text-white' : 'bg-zinc-100 text-zinc-500 ring-1 ring-inset ring-zinc-200'
-              }`}
-            >
-              {s.done ? <Check weight="bold" className="h-3 w-3" /> : i + 1}
-            </span>
-            <span
-              className={`flex-1 truncate text-sm ${
-                s.done ? 'text-zinc-400 line-through' : 'font-medium text-zinc-800'
-              }`}
-            >
-              {s.label}
-            </span>
-            {!s.done && (
-              <Button
+          <li key={s.label}>
+            {s.done ? (
+              <div className="flex items-center gap-3">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-[11px] font-semibold text-white">
+                  <Check weight="bold" className="h-3 w-3" />
+                </span>
+                <span className="truncate text-sm text-zinc-400 line-through">{s.label}</span>
+              </div>
+            ) : (
+              // Step-linked (journey §4): the whole row is the action.
+              <button
                 type="button"
-                variant="outline"
-                size="sm"
                 onClick={s.action}
-                className="h-7 border-zinc-200 px-2.5 text-xs font-medium text-zinc-700"
+                className="group flex w-full items-center gap-3 rounded-lg px-1 py-0.5 text-left outline-none transition hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-400"
               >
-                {s.cta}
-              </Button>
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-[11px] font-semibold text-zinc-500 ring-1 ring-inset ring-zinc-200">
+                  {i + 1}
+                </span>
+                <span className="flex-1 truncate text-sm font-medium text-zinc-800">{s.label}</span>
+                <ArrowRight className="h-3.5 w-3.5 shrink-0 text-zinc-300 transition group-hover:translate-x-0.5 group-hover:text-zinc-700" />
+              </button>
             )}
           </li>
         ))}

@@ -6,6 +6,7 @@ import { Link } from 'react-router'
 import { ArrowRight, Check, Minus } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { PublicNav, Footer } from '@/pages/Landing'
+import { useAuth } from '@/state/auth'
 
 const SPRING = { type: 'spring', stiffness: 100, damping: 20 } as const
 
@@ -75,6 +76,9 @@ function CellValue({ v }: { v: Cell }) {
 }
 
 export function Pricing() {
+  // W4 wiring: a signed-in visitor's upgrade intent lands in Billing
+  // (subscribe flow + 503 posture live there); signed-out visitors register.
+  const { user } = useAuth()
   return (
     <div className="flex min-h-[100dvh] flex-col bg-canvas text-zinc-900">
       <PublicNav />
@@ -128,7 +132,7 @@ export function Pricing() {
                   }
                   variant={p.hot ? 'default' : 'outline'}
                 >
-                  <Link to="/register">
+                  <Link to={user ? '/app/billing' : '/register'}>
                     {p.cta}
                     <ArrowRight className="h-3.5 w-3.5" />
                   </Link>

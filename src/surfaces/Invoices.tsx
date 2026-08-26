@@ -11,6 +11,7 @@ import {
 } from '@phosphor-icons/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { api, type Invoice, type UploadFileResult } from '@/api'
+import { ApiError, apiErrorFrom } from '@/lib/api-error'
 import { toast } from 'sonner'
 import { useData } from '@/state/data'
 import { useUi } from '@/state/ui'
@@ -60,13 +61,71 @@ const MotionTableRow = motion.create(TableRow)
 
 const ALLOWED_EXT = ['.jpg', '.jpeg', '.png', '.bmp', '.tif', '.tiff', '.pdf']
 
+const UPLOADS_BASE = '/api/v1'
+
+type UploadPhase = 'uploading' | 'extracting'
+type QueueState = 'queued' | 'uploading' | 'extracting' | 'done' | 'failed'
+
+type QueueRow = {
+  key: string
+  file: File
+  type: 'sales' | 'purchase'
+  state: QueueState
+  error?: string
+  invoiceNumber?: string | null
+}
+
+/**
+ * One file through the existing batch endpoint (POST /upload-invoices with a
+ * single entry), over XHR so the FE can separate "bytes uploading" from
+ * server-side OCR — OCR runs minutes per file, so a bare fetch looks hung
+ * (journey G8). Errors go through the shared ApiError normalizer so 402/413
+ * detail survives for inline display.
+ */
+function uploadInvoiceFile(
+  file: File,
+  invoice_type: string,
+  client_id: number,
+  onPhase: (p: UploadPhase) => void,
+): Promise<UploadFileResult> {
+  const { promise, resolve, reject } = Promise.withResolvers<UploadFileResult>()
+  const fd = new FormData()
+  fd.append('files', file)
+  fd.append('client_id', String(client_id))
+  fd.append('invoice_type', invoice_type)
+  const xhr = new XMLHttpRequest()
+  xhr.open('POST', `${UPLOADS_BASE}/upload-invoices`)
+  xhr.upload.onprogress = (e) => {
+    // Request body fully sent — everything after this is server-side OCR.
+    if (e.loaded >= e.total) onPhase('extracting')
+  }
+  xhr.onload = () => {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const results = JSON.parse(xhr.responseText) as UploadFileResult[]
+        resolve(results[0] ?? { filename: file.name, status: 'error', error: 'Empty response' })
+      } catch {
+        reject(new Error('Malformed upload response'))
+      }
+    } else {
+      reject(apiErrorFrom(xhr.status, xhr.statusText, xhr.responseText))
+    }
+  }
+  xhr.onerror = () => reject(new Error('Network error during upload'))
+  onPhase('uploading')
+  xhr.send(fd)
+  return promise
+}
+
 export function Invoices() {
   // upload queue + edit draft live only here — keystrokes re-render this form,
   // not the other surfaces' tables (F-02 split)
   const [dragOverType, setDragOverType] = useState<'sales' | 'purchase' | null>(null)
   const [uploadBusy, setUploadBusy] = useState(false)
-  const [batchResults, setBatchResults] = useState<UploadFileResult[]>([])
-  const [failedFiles, setFailedFiles] = useState<{ files: File[]; type: 'sales' | 'purchase' } | null>(null)
+  // Per-file upload queue (journey G8): rows advance queued → uploading →
+  // extracting → done/failed while each OCR runs, instead of one blocking
+  // batch call. Single files get the same row treatment.
+  const [queue, setQueue] = useState<QueueRow[]>([])
   const [editingId, setEditingId] = useState<number | null>(null)
   const [draft, setDraft] = useState<Record<string, string>>({})
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
@@ -75,10 +134,15 @@ export function Invoices() {
 
   // Reset per-client ephemeral state when the scope switches.
   useEffect(() => {
-    setBatchResults([])
-    setFailedFiles(null)
+    setQueue([])
     setDragOverType(null)
   }, [clientId])
+
+  const setRow = (key: string, patch: Partial<QueueRow>) =>
+    setQueue((q) => q.map((r) => (r.key === key ? { ...r, ...patch } : r)))
+
+  const doneCount = queue.filter((r) => r.state === 'done').length
+  const failedRows = queue.filter((r) => r.state === 'failed')
 
   const onUploadInvoices = async (files: File[], type: 'sales' | 'purchase') => {
     if (files.length === 0) return
@@ -92,23 +156,42 @@ export function Invoices() {
     const rejected = files.length - filtered.length
     if (rejected > 0) toast.error(`${rejected} file(s) skipped (unsupported type)`)
     if (filtered.length === 0) return
+    const rows: QueueRow[] = filtered.map((f, i) => ({
+      key: `${Date.now()}-${i}`,
+      file: f,
+      type,
+      state: 'queued',
+    }))
+    setQueue(rows)
     setUploadBusy(true)
-    setBatchResults([])
-    setFailedFiles(null)
-    try {
-      const results = await api.uploadInvoices(filtered, type, clientId)
-      setBatchResults(results)
-      const failedNames = new Set(results.filter((r) => r.status !== 'ok').map((r) => r.filename))
-      const retry = files.filter((f) => failedNames.has(f.name))
-      if (retry.length > 0) setFailedFiles({ files: retry, type })
-      const okCount = results.length - retry.length
-      toast.success(`${okCount} extracted, ${retry.length} failed`)
-      await load()
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Upload failed')
-    } finally {
-      setUploadBusy(false)
+    let okCount = 0
+    // Cap gate (402 upgrade) blocks every remaining file too — abort the
+    // rest of the queue instead of hammering the same rejection.
+    let capErr: ApiError | null = null
+    for (const row of rows) {
+      try {
+        const result = await uploadInvoiceFile(row.file, type, clientId, (phase) =>
+          setRow(row.key, { state: phase }),
+        )
+        if (result.status === 'ok') {
+          okCount++
+          setRow(row.key, {
+            state: 'done',
+            invoiceNumber: result.invoice?.invoice_number ?? null,
+          })
+        } else {
+          setRow(row.key, { state: 'failed', error: result.error ?? 'Extraction failed' })
+        }
+      } catch (e) {
+        if (e instanceof ApiError && e.upgrade) capErr = e
+        setRow(row.key, { state: 'failed', error: e instanceof Error ? e.message : 'Upload failed' })
+      }
     }
+    if (capErr) toast.error(capErr.message)
+    else if (okCount < filtered.length) toast.warning(`${okCount} extracted, ${filtered.length - okCount} failed`)
+    else toast.success(`${okCount} extracted`)
+    await load()
+    setUploadBusy(false)
   }
 
   const startEdit = (inv: Invoice) => {
@@ -261,44 +344,72 @@ export function Invoices() {
         })}
       </div>
 
-      {batchResults.length > 0 && (
+      {queue.length > 0 && (
         <div className="surface overflow-hidden rounded-xl">
           <div className="flex items-center justify-between gap-3 border-b border-zinc-100 bg-zinc-50/70 px-4 py-2.5">
             <p className="text-xs font-medium text-zinc-700">
-              Batch result —{' '}
-              <span className="text-emerald-700">
-                {batchResults.filter((r) => r.status === 'ok').length} ok
-              </span>
+              Uploads —{' '}
+              <span className="text-emerald-700">{doneCount} ok</span>
               <span className="mx-1.5 text-zinc-300">·</span>
-              <span className="text-red-700">
-                {batchResults.filter((r) => r.status !== 'ok').length} failed
-              </span>
+              <span className="text-red-700">{failedRows.length} failed</span>
+              {uploadBusy && (
+                <span className="ml-2 inline-flex items-center gap-1 font-normal text-zinc-400">
+                  <CircleNotch className="h-3 w-3 animate-spin" />
+                  working
+                </span>
+              )}
             </p>
-            {failedFiles && (
+            {failedRows.length > 0 && !uploadBusy && (
               <Button
                 variant="ghost"
                 size="sm"
-                disabled={uploadBusy}
-                onClick={() => onUploadInvoices(failedFiles.files, failedFiles.type)}
+                onClick={() =>
+                  onUploadInvoices(
+                    failedRows.map((r) => r.file),
+                    failedRows[0].type,
+                  )
+                }
                 className={cn(
                   'h-7 gap-1.5 px-2 text-xs text-amber-800 hover:bg-amber-50 hover:text-amber-900',
                 )}
               >
                 <ArrowsClockwise className="h-3.5 w-3.5" />
-                Retry {failedFiles.files.length} failed
+                Retry {failedRows.length} failed
               </Button>
             )}
           </div>
           <div className="divide-y divide-zinc-50">
-            {batchResults.map((r, i) => (
-              <div key={i} className="flex items-center justify-between gap-3 px-4 py-2 text-xs">
-                <span className="truncate text-zinc-700">{r.filename}</span>
-                {r.status === 'ok' ? (
-                  <span className="num shrink-0 font-medium text-emerald-700">
-                    {r.invoice?.invoice_number ? `#${r.invoice.invoice_number} ` : ''}pending review
+            {queue.map((row) => (
+              <div key={row.key} className="flex items-center justify-between gap-3 px-4 py-2 text-xs">
+                <span className="truncate text-zinc-700">{row.file.name}</span>
+                {row.state === 'queued' && (
+                  <span className="shrink-0 text-zinc-400">queued</span>
+                )}
+                {row.state === 'uploading' && (
+                  <span className="flex shrink-0 items-center gap-1.5 text-amber-700">
+                    <CircleNotch className="h-3 w-3 animate-spin" />
+                    uploading…
                   </span>
-                ) : (
-                  <span className="shrink-0 text-red-700">{(r.error || 'failed').slice(0, 60)}</span>
+                )}
+                {row.state === 'extracting' && (
+                  <span className="flex shrink-0 items-center gap-1.5 text-amber-700">
+                    <CircleNotch className="h-3 w-3 animate-spin" />
+                    extracting (OCR)…
+                  </span>
+                )}
+                {row.state === 'done' && (
+                  <span className="num shrink-0 font-medium text-emerald-700">
+                    {row.invoiceNumber ? `#${row.invoiceNumber} ` : ''}pending review
+                  </span>
+                )}
+                {/* Backend error detail inline on the row (journey P0 feedback). */}
+                {row.state === 'failed' && (
+                  <span
+                    title={row.error}
+                    className="max-w-[24rem] shrink truncate text-right text-red-700"
+                  >
+                    {row.error ?? 'Failed'}
+                  </span>
                 )}
               </div>
             ))}

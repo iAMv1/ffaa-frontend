@@ -194,6 +194,62 @@ export const api = {
   },
 }
 
+// ── Billing (W4) ─────────────────────────────────────────────────────────
+// Hand-added types: these endpoints are not in schema.gen.ts yet (gen:api
+// mirrors the live backend; regenerate once the subscription cutover ships).
+// Shapes pinned by .scratch/ffaa-saas/design/api-contract.md + §6 of
+// billing-state-machine.md.
+
+export type BillingPlan = {
+  code: string
+  name: string
+  price_rupees: number
+  invoice_cap: number | null
+  client_cap: number | null
+  features: string[]
+}
+
+export type BillingPayment = {
+  id: number | string
+  order_id?: string | null
+  razorpay_payment_id?: string | null
+  amount_rupees?: number | null
+  status?: string | null
+  created_at?: string | null
+}
+
+export type BillingMe = {
+  plan_code: string
+  /** Post-cutover truth; pre-cutover backends answer with `status`. */
+  rzp_status?: string | null
+  status?: string | null
+  current_period_end?: string | null
+  grace_ends_at?: string | null
+  payments?: BillingPayment[]
+}
+
+/** POST /billing/subscribe → checkout params; keyless deployments answer 503. */
+export type SubscribeResult = {
+  subscription_id: string
+  key_id: string
+  short_url?: string | null
+}
+
+export const billing = {
+  plans: () => j<BillingPlan[]>('/billing/plans'),
+  me: () => j<BillingMe>('/billing/me'),
+  subscribe: (plan_code: string) =>
+    j<SubscribeResult>('/billing/subscribe', authJson('POST', { plan_code })),
+  /** HMAC-check-only reporting endpoint (§5) — never grants entitlement;
+   *  called from the Checkout success handler for UI responsiveness. */
+  verify: (body: {
+    razorpay_payment_id: string
+    razorpay_subscription_id: string
+    razorpay_signature: string
+  }) => j<unknown>('/billing/verify', authJson('POST', body)),
+  history: (limit = 50) => j<BillingPayment[]>(`/billing/history?limit=${limit}`),
+}
+
 // ── Auth (fastapi-users cookie transport) ────────────────────────────────
 // Session lives in an httpOnly cookie (`ffaaauth`); same-origin fetch carries
 // it with default credentials — nothing token-shaped is ever stored in JS.
