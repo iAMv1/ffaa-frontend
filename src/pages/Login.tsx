@@ -68,7 +68,14 @@ export function Login() {
             {socialProviders.map((p) => (
               <a
                 key={p}
-                href={`/api/v1/auth/${p}/authorize`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  // /authorize returns JSON {authorization_url} + sets the CSRF
+                  // cookie needed by /callback — navigate after fetching it.
+                  fetch(`/api/v1/auth/${p}/authorize`)
+                    .then((r) => r.json())
+                    .then((d) => { window.location.href = d.authorization_url; });
+                }}
                 className="flex w-full items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50"
               >
                 Continue with {p.charAt(0).toUpperCase() + p.slice(1)}
