@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { motion, type Variants } from 'framer-motion'
+import { motion, type Variants } from 'motion/react'
 import { ArrowClockwise } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { api } from '@/api'

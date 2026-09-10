@@ -5,7 +5,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { useEffect } from 'react'
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
+import { motion, useMotionValue, useSpring, useTransform } from 'motion/react'
 import {
   ArrowRight,
   ArrowsLeftRight,

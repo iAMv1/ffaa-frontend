@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AnimatePresence, motion, type Variants } from 'framer-motion'
+import { AnimatePresence, motion, type Variants } from 'motion/react'
 import { CheckCircle, CircleNotch, Trash, UploadSimple } from '@phosphor-icons/react'
 import { api, type BankRow } from '@/api'
 import { toast } from 'sonner'

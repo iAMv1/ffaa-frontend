@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { NavLink, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import {

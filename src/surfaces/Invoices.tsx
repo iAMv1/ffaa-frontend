@@ -9,7 +9,7 @@ import {
   UploadSimple,
   WarningCircle,
 } from '@phosphor-icons/react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { api, type Invoice, type UploadFileResult } from '@/api'
 import { ApiError, apiErrorFrom } from '@/lib/api-error'
 import { toast } from 'sonner'

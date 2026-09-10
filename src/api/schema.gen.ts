@@ -1275,8 +1275,6 @@ export interface components {
         };
         /** ReminderSend */
         ReminderSend: {
-            /** Template Name */
-            template_name?: string | null;
             /** Custom Message */
             custom_message?: string | null;
             /**

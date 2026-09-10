@@ -1,7 +1,7 @@
 /**
  * Server-data context: the cache of everything fetched from the API plus the
  * refresh action and cross-surface busy flags. One refresh re-renders exactly
- * the data consumers (F-02). Derived memos moved verbatim from store.tsx.
+ * the data consumers (F-02).
  */
 import type { Dispatch, FormEvent, ReactNode, SetStateAction } from 'react'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'

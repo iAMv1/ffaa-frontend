@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { CircleNotch, Envelope, Trash } from '@phosphor-icons/react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import { api, type ReminderPreview } from '@/api'
 import { useData } from '@/state/data'
@@ -62,7 +62,7 @@ export function Reminders() {
       return next
     })
 
-  // Same semantics as store.sendOneReminder (api.sendReminder -> flash -> refresh),
+  // Per-row send: api.sendReminder -> success flash -> refresh,
   // plus per-row failure tracking so a danger Badge can mark the failed card.
   const handleSendOne = async (p: ReminderPreview) => {
     setRowBusy(p.client_id)
@@ -79,7 +79,7 @@ export function Reminders() {
     }
   }
 
-  // Same loop as store.sendAllReminders (sequential sends, summary flash, refresh),
+  // Batch send loop: sequential sends, summary flash, refresh,
   // plus per-row failure tracking so partial failures surface on the failing rows.
   const handleSendAll = async () => {
     setAllBusy(true)

@@ -99,13 +99,13 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(client),
     }),
-  sendReminder: (client_id: number, template_name?: string) =>
+  sendReminder: (client_id: number) =>
     j<{ id: number; status: string; sent_at: string | null }>(
       `/clients/${client_id}/send-reminder`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ template_name }),
+        body: JSON.stringify({}),
       },
     ),
   reminderHistory: (client_id?: number) =>

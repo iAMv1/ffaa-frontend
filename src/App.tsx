@@ -1,5 +1,5 @@
 import { Component, useEffect, useState, type ReactNode } from 'react'
-import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
+import { AnimatePresence, motion, MotionConfig } from 'motion/react'
 import { CircleNotch, WarningCircle } from '@phosphor-icons/react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useOutlet } from 'react-router'
 import { Toaster, toast } from 'sonner'

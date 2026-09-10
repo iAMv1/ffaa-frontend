@@ -1,7 +1,7 @@
 // P3 public site — pricing. Hardcoded plans mirroring the billing seed
 // (free ₹0 / 10 invoices · pro ₹499 unlimited). P4's /billing/plans endpoint
 // can replace the constants without touching layout.
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { Link } from 'react-router'
 import { ArrowRight, Check, Minus } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
