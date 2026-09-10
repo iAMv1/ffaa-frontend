@@ -121,7 +121,7 @@ export function Reconcile() {
               className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-5 py-4"
             >
               <div className="min-w-0">
-                <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-400">
+                <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
                   Invoice
                 </p>
                 <p className="num mt-1 truncate text-sm font-medium text-zinc-900">
@@ -138,13 +138,13 @@ export function Reconcile() {
                 {typeof m.match_score === 'number' ? m.match_score.toFixed(2) : '—'}
               </Badge>
               <div className="min-w-0">
-                <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-400">
+                <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
                   Bank line
                 </p>
                 <p className="mt-1 max-w-md truncate text-sm text-zinc-800">
                   {m.narration ?? '—'}
                 </p>
-                <p className="num mt-0.5 text-xs text-zinc-400">
+                <p className="num mt-0.5 text-xs text-zinc-500">
                   #{m.bank_statement_id ?? '—'}
                 </p>
               </div>
@@ -157,7 +157,7 @@ export function Reconcile() {
         <div className="border-b border-zinc-100 px-5 py-3">
           <h3 className="text-sm font-semibold text-zinc-900">
             History{' '}
-            <span className="num ml-1 text-xs font-normal text-zinc-400">
+            <span className="num ml-1 text-xs font-normal text-zinc-500">
               {reconHistory.length} confirmed pair(s)
             </span>
           </h3>
@@ -173,16 +173,16 @@ export function Reconcile() {
           <Table className="min-w-[640px] text-left">
             <TableHeader>
               <TableRow className="border-b border-zinc-100 hover:bg-transparent">
-                <TableHead className="h-9 px-5 text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+                <TableHead className="h-9 px-5 text-[11px] font-medium uppercase tracking-wide text-zinc-500">
                   Invoice
                 </TableHead>
-                <TableHead className="h-9 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+                <TableHead className="h-9 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-500">
                   Narration
                 </TableHead>
-                <TableHead className="h-9 px-3 text-right text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+                <TableHead className="h-9 px-3 text-right text-[11px] font-medium uppercase tracking-wide text-zinc-500">
                   Amount
                 </TableHead>
-                <TableHead className="h-9 px-3 text-right text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+                <TableHead className="h-9 px-3 text-right text-[11px] font-medium uppercase tracking-wide text-zinc-500">
                   Matched
                 </TableHead>
                 <TableHead className="h-9 px-5" />
@@ -209,7 +209,7 @@ export function Reconcile() {
                   <td className="num whitespace-nowrap px-3 py-2.5 text-right text-sm font-medium text-zinc-900">
                     {money(r.amount ?? 0)}
                   </td>
-                  <td className="num whitespace-nowrap px-3 py-2.5 text-right text-xs text-zinc-400">
+                  <td className="num whitespace-nowrap px-3 py-2.5 text-right text-xs text-zinc-500">
                     {r.matched_by} ·{' '}
                     {r.created_at ? new Date(r.created_at).toLocaleDateString() : '—'}
                   </td>

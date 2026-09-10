@@ -81,7 +81,7 @@ export function Client() {
           return (
           <div key={m.label} className="bg-white px-5 py-5">
             <Icon className="h-4 w-4 text-zinc-300" weight="bold" />
-            <p className="mt-2 text-[11px] font-medium uppercase tracking-wide text-zinc-400">{m.label}</p>
+            <p className="mt-2 text-[11px] font-medium uppercase tracking-wide text-zinc-500">{m.label}</p>
             <p className="num mt-1.5 text-2xl font-semibold tracking-tight text-zinc-900">
               {loading ? '—' : m.value}
             </p>
@@ -95,24 +95,25 @@ export function Client() {
           <h3 className="text-sm font-semibold text-zinc-900">Details</h3>
           <dl className="mt-3 space-y-2 text-sm">
             <div className="flex justify-between gap-3">
-              <dt className="text-xs text-zinc-400">GSTIN</dt>
+              <dt className="text-xs text-zinc-500">GSTIN</dt>
               <dd className="num text-right text-zinc-800">{activeClient?.gst_number || '—'}</dd>
             </div>
             <div className="flex justify-between gap-3">
-              <dt className="text-xs text-zinc-400">Address</dt>
+              <dt className="text-xs text-zinc-500">Address</dt>
               <dd className="text-right leading-snug text-zinc-800">{activeClient?.address || '—'}</dd>
             </div>
           </dl>
           <div className="mt-5 flex items-center justify-between">
             <label
               htmlFor="client-email"
-              className="text-[11px] font-medium uppercase tracking-wide text-zinc-400"
+              className="text-[11px] font-medium uppercase tracking-wide text-zinc-500"
             >
               Email
             </label>
             <AnimatePresence>
               {emailSaved && !emailError ? (
                 <motion.span
+                  role="status"
                   key="saved-tick"
                   initial={{ opacity: 0, scale: 0.6 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -130,6 +131,8 @@ export function Client() {
             id="client-email"
             type="email"
             placeholder="client@email.com"
+            aria-invalid={emailError ? true : undefined}
+            aria-describedby={emailError ? 'client-email-error' : undefined}
             className={`mt-1.5 w-full rounded-lg border bg-white px-2.5 py-2 text-sm text-zinc-800 outline-none focus:ring-2 ${
               emailError
                 ? 'border-red-400 focus:border-red-500 focus:ring-red-600/15'
@@ -162,7 +165,7 @@ export function Client() {
               }
             }}
           />
-          {emailError && <p className="mt-1 text-[11px] font-medium text-red-600">{emailError}</p>}
+          {emailError && <p id="client-email-error" role="alert" className="mt-1 text-[11px] font-medium text-red-600">{emailError}</p>}
           <div className="mt-5 flex items-center gap-2">
             <Button
               type="button"
@@ -183,7 +186,7 @@ export function Client() {
               }}
               className="h-8 flex-1 gap-2 bg-zinc-900 px-3 text-xs font-medium text-white hover:bg-zinc-800"
             >
-              <Envelope className="size-3.5" />
+              <Envelope aria-hidden className="size-3.5" />
               Send reminder
             </Button>
             <Button
@@ -266,10 +269,10 @@ export function Client() {
               <Table className="min-w-0">
                 <TableHeader>
                   <TableRow className="border-zinc-100 hover:bg-transparent">
-                    <TableHead className="h-9 px-4 text-[11px] font-medium uppercase tracking-wide text-zinc-400">Invoice</TableHead>
-                    <TableHead className="h-9 px-2 text-[11px] font-medium uppercase tracking-wide text-zinc-400">Company</TableHead>
-                    <TableHead className="h-9 px-2 text-right text-[11px] font-medium uppercase tracking-wide text-zinc-400">Amount</TableHead>
-                    <TableHead className="h-9 px-4 text-right text-[11px] font-medium uppercase tracking-wide text-zinc-400">Status</TableHead>
+                    <TableHead className="h-9 px-4 text-[11px] font-medium uppercase tracking-wide text-zinc-500">Invoice</TableHead>
+                    <TableHead className="h-9 px-2 text-[11px] font-medium uppercase tracking-wide text-zinc-500">Company</TableHead>
+                    <TableHead className="h-9 px-2 text-right text-[11px] font-medium uppercase tracking-wide text-zinc-500">Amount</TableHead>
+                    <TableHead className="h-9 px-4 text-right text-[11px] font-medium uppercase tracking-wide text-zinc-500">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -337,9 +340,9 @@ export function Client() {
               <Table className="min-w-0">
                 <TableHeader>
                   <TableRow className="border-zinc-100 hover:bg-transparent">
-                    <TableHead className="h-9 px-4 text-[11px] font-medium uppercase tracking-wide text-zinc-400">Date</TableHead>
-                    <TableHead className="h-9 px-2 text-[11px] font-medium uppercase tracking-wide text-zinc-400">Narration</TableHead>
-                    <TableHead className="h-9 px-4 text-right text-[11px] font-medium uppercase tracking-wide text-zinc-400">Amount</TableHead>
+                    <TableHead className="h-9 px-4 text-[11px] font-medium uppercase tracking-wide text-zinc-500">Date</TableHead>
+                    <TableHead className="h-9 px-2 text-[11px] font-medium uppercase tracking-wide text-zinc-500">Narration</TableHead>
+                    <TableHead className="h-9 px-4 text-right text-[11px] font-medium uppercase tracking-wide text-zinc-500">Amount</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -401,8 +404,8 @@ export function Client() {
               <Table className="min-w-0">
                 <TableHeader>
                   <TableRow className="border-zinc-100 hover:bg-transparent">
-                    <TableHead className="h-9 px-4 text-[11px] font-medium uppercase tracking-wide text-zinc-400">Item</TableHead>
-                    <TableHead className="h-9 px-4 text-right text-[11px] font-medium uppercase tracking-wide text-zinc-400">State</TableHead>
+                    <TableHead className="h-9 px-4 text-[11px] font-medium uppercase tracking-wide text-zinc-500">Item</TableHead>
+                    <TableHead className="h-9 px-4 text-right text-[11px] font-medium uppercase tracking-wide text-zinc-500">State</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -413,7 +416,7 @@ export function Client() {
                       className="border-b border-zinc-100 transition-colors hover:bg-zinc-50/80"
                     >
                       <TableCell className="px-4 py-2.5">
-                        <span className="mr-2 text-[10px] font-medium uppercase tracking-wider text-zinc-400">Flag</span>
+                        <span className="mr-2 text-[10px] font-medium uppercase tracking-wider text-zinc-500">Flag</span>
                         <span className="num text-xs text-zinc-700">#{f.invoice_id} vs #{f.potential_duplicate_id}</span>
                       </TableCell>
                       <TableCell className="px-4 py-2.5 text-right">
@@ -433,7 +436,7 @@ export function Client() {
                       className="border-b border-zinc-100 transition-colors last:border-0 hover:bg-zinc-50/80"
                     >
                       <TableCell className="max-w-0 px-4 py-2.5">
-                        <span className="mr-2 text-[10px] font-medium uppercase tracking-wider text-zinc-400">Mail</span>
+                        <span className="mr-2 text-[10px] font-medium uppercase tracking-wider text-zinc-500">Mail</span>
                         <span className="truncate text-xs text-zinc-700">{String(r.subject)}</span>
                       </TableCell>
                       <TableCell className="px-4 py-2.5 text-right">
@@ -488,7 +491,7 @@ export function Client() {
                         key={cat}
                         label={<span className="text-xs uppercase tracking-wider text-zinc-600">{cat}</span>}
                         count={
-                          <span className="num text-xs text-zinc-400">{files.length}</span>
+                          <span className="num text-xs text-zinc-500">{files.length}</span>
                         }
                         headerClassName="px-3 py-1.5"
                       >

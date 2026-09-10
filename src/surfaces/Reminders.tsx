@@ -174,9 +174,9 @@ export function Reminders() {
               onClick={handleSendAll}
             >
               {anyAllBusy ? (
-                <CircleNotch className="animate-spin" />
+                <CircleNotch aria-hidden className="animate-spin" />
               ) : (
-                <Envelope />
+                <Envelope aria-hidden />
               )}
               Send all ({sendableCount})
             </Button>
@@ -184,7 +184,7 @@ export function Reminders() {
         </div>
       </Card>
 
-      <div className="space-y-3">
+      <div className="space-y-3" role="status" aria-busy={previewLoading || undefined}>
         {previewLoading ? (
           [0, 1, 2].map((i) => (
             <div key={i} className="rounded-xl border border-zinc-200 bg-white px-5 py-4">
@@ -225,7 +225,7 @@ export function Reminders() {
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-semibold text-zinc-900">{p.name}</p>
                     {p.email ? (
-                      <span className="truncate text-xs text-zinc-400">{p.email}</span>
+                      <span className="truncate text-xs text-zinc-500">{p.email}</span>
                     ) : (
                       <Badge variant="destructive" className="bg-red-600 text-white">
                         no email
@@ -247,7 +247,7 @@ export function Reminders() {
                         {d}
                       </Badge>
                     ))}
-                    <span className="num text-[11px] text-zinc-400">
+                    <span className="num text-[11px] text-zinc-500">
                       {p.days_since_upload != null
                         ? `last upload ${p.days_since_upload}d ago`
                         : 'no uploads yet'}
@@ -265,9 +265,9 @@ export function Reminders() {
                   onClick={() => handleSendOne(p)}
                 >
                   {rowBusy === p.client_id ? (
-                    <CircleNotch className="animate-spin" />
+                    <CircleNotch aria-hidden className="animate-spin" />
                   ) : (
-                    <Envelope />
+                    <Envelope aria-hidden />
                   )}
                   Send
                 </Button>
@@ -297,11 +297,11 @@ export function Reminders() {
           <Table>
             <TableHeader>
               <TableRow className="border-zinc-100 hover:bg-transparent">
-                <TableHead className="pl-5 text-zinc-400">Client</TableHead>
-                <TableHead className="text-zinc-400">Subject</TableHead>
-                <TableHead className="text-zinc-400">Status</TableHead>
-                <TableHead className="text-zinc-400">Sent</TableHead>
-                <TableHead className="text-zinc-400">Error</TableHead>
+                <TableHead className="pl-5 text-zinc-500">Client</TableHead>
+                <TableHead className="text-zinc-500">Subject</TableHead>
+                <TableHead className="text-zinc-500">Status</TableHead>
+                <TableHead className="text-zinc-500">Sent</TableHead>
+                <TableHead className="text-zinc-500">Error</TableHead>
                 <TableHead className="pr-5" />
               </TableRow>
             </TableHeader>
@@ -382,7 +382,7 @@ export function Reminders() {
                         }
                       >
                         {rowBusy === -r.id ? (
-                          <CircleNotch className="animate-spin text-red-700" />
+                          <CircleNotch aria-hidden className="animate-spin text-red-700" />
                         ) : (
                           <Trash className="text-red-700" />
                         )}

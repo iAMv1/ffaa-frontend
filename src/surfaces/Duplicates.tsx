@@ -45,11 +45,11 @@ export function Duplicates() {
           <Table className="min-w-[760px]">
             <TableHeader>
               <TableRow className="border-zinc-100 hover:bg-transparent">
-                <TableHead className="h-10 px-5 text-[11px] font-medium uppercase tracking-wide text-zinc-400">Invoice</TableHead>
-                <TableHead className="h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-400">Potential duplicate</TableHead>
-                <TableHead className="h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-400">Score</TableHead>
-                <TableHead className="h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-400">Matched fields</TableHead>
-                <TableHead className="h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-400">Status</TableHead>
+                <TableHead className="h-10 px-5 text-[11px] font-medium uppercase tracking-wide text-zinc-500">Invoice</TableHead>
+                <TableHead className="h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-500">Potential duplicate</TableHead>
+                <TableHead className="h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-500">Score</TableHead>
+                <TableHead className="h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-500">Matched fields</TableHead>
+                <TableHead className="h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-500">Status</TableHead>
                 <TableHead className="h-10 px-5" />
               </TableRow>
             </TableHeader>
@@ -124,10 +124,10 @@ export function Duplicates() {
                                 },
                               })
                             }
-                            className="h-7 gap-1 rounded-none border-0 px-2.5 text-xs font-medium text-emerald-700 shadow-none hover:bg-emerald-50 hover:text-emerald-800 focus-visible:ring-inset"
+                            className="h-8 gap-1 rounded-none border-0 px-2.5 text-xs font-medium text-emerald-700 shadow-none hover:bg-emerald-50 hover:text-emerald-800 focus-visible:ring-inset"
                           >
                             {rowBusy === f.id ? (
-                              <CircleNotch className="size-3.5 animate-spin" />
+                              <CircleNotch aria-hidden className="size-3.5 animate-spin" />
                             ) : null}
                             Accept
                           </Button>
@@ -158,7 +158,7 @@ export function Duplicates() {
                                 },
                               })
                             }
-                            className="h-7 gap-1 rounded-none border-0 px-2.5 text-xs font-medium text-zinc-500 hover:bg-zinc-50 hover:text-red-700 focus-visible:ring-inset"
+                            className="h-8 gap-1 rounded-none border-0 px-2.5 text-xs font-medium text-zinc-500 hover:bg-zinc-50 hover:text-red-700 focus-visible:ring-inset"
                           >
                             Reject
                           </Button>

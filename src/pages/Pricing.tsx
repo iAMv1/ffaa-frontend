@@ -71,7 +71,7 @@ const FAQ = [
 ]
 
 function CellValue({ v }: { v: Cell }) {
-  if (v === null) return <Minus className="h-3.5 w-3.5 text-zinc-300" aria-label="Not included" />
+  if (v === null) return <Minus className="h-3.5 w-3.5 text-zinc-500" aria-label="Not included" />
   return <span className="text-zinc-700">{v}</span>
 }
 
@@ -87,7 +87,7 @@ export function Pricing() {
         {/* plans */}
         <section className="mx-auto w-full max-w-[820px] px-6 pb-16 pt-16 text-center sm:pt-20">
           <motion.div variants={group} initial="hidden" animate="show">
-            <motion.p variants={rise} className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-400">
+            <motion.p variants={rise} className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
               Pricing
             </motion.p>
             <motion.h1 variants={rise} className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -110,7 +110,7 @@ export function Pricing() {
                 }
               >
                 <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">{p.name}</p>
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">{p.name}</p>
                   {p.hot ? (
                     <span className="rounded-full border border-zinc-900 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide">
                       Recommended
@@ -119,7 +119,7 @@ export function Pricing() {
                 </div>
                 <p className="mt-3 num text-3xl font-semibold tracking-tight">
                   {p.price}
-                  <span className="ml-1.5 text-xs font-normal text-zinc-400">{p.cadence}</span>
+                  <span className="ml-1.5 text-xs font-normal text-zinc-500">{p.cadence}</span>
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-zinc-500">{p.blurb}</p>
                 <Button
@@ -192,7 +192,7 @@ export function Pricing() {
                 transition={{ delay: i * 0.05 }}
               >
                 <dt className="flex items-start gap-3 text-sm font-semibold tracking-tight">
-                  <span className="num mt-px text-zinc-400">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="num mt-px text-zinc-500">{String(i + 1).padStart(2, '0')}</span>
                   {item.q}
                 </dt>
                 <dd className="mt-2 pl-8 text-sm leading-relaxed text-zinc-500">{item.a}</dd>
@@ -209,7 +209,7 @@ export function Pricing() {
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
-          <p className="mt-3 text-xs text-zinc-400">Free tier needs no card.</p>
+          <p className="mt-3 text-xs text-zinc-500">Free tier needs no card.</p>
         </section>
       </main>
 

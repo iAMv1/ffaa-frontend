@@ -15,7 +15,7 @@ export function statusClass(s: string) {
 
 export function SkeletonRows({ n = 4 }: { n?: number }) {
   return (
-    <div className="space-y-2 p-4">
+    <div role="status" aria-busy="true" aria-label="Loading" className="space-y-2 p-4">
       {Array.from({ length: n }).map((_, i) => (
         <div key={i} className="skeleton h-10 rounded-lg" style={{ opacity: 1 - i * 0.1 }} />
       ))}

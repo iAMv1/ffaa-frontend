@@ -37,12 +37,12 @@ function SectionHead({
   return (
     <div className="mb-6 flex items-baseline justify-between gap-4">
       <div>
-        <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400">
+        <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-500">
           {kicker}
         </p>
         <h3 className="mt-1 text-lg font-semibold tracking-tight text-zinc-900">{title}</h3>
       </div>
-      {right != null && <div className="num shrink-0 text-xs text-zinc-400">{right}</div>}
+      {right != null && <div className="num shrink-0 text-xs text-zinc-500">{right}</div>}
     </div>
   )
 }
@@ -61,7 +61,7 @@ function ChartTip({
   if (!active || !payload?.length) return null
   return (
     <div className="surface rounded-lg px-3 py-2 text-xs">
-      <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">{label}</p>
+      <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">{label}</p>
       <p className="num mt-0.5 text-sm font-semibold text-zinc-900">
         {money(Number(payload[0].value ?? 0))}
       </p>
@@ -130,11 +130,11 @@ function OnboardingChecklist({ steps }: { steps: OnboardingStep[] }) {
         type="button"
         onClick={dismiss}
         aria-label="Dismiss getting-started checklist"
-        className="absolute right-3 top-3 rounded-md p-1 text-zinc-400 outline-none transition hover:bg-zinc-100 hover:text-zinc-700 focus-visible:ring-2 focus-visible:ring-zinc-400"
+        className="absolute right-3 top-3 rounded-md p-2 text-zinc-400 outline-none transition hover:bg-zinc-100 hover:text-zinc-700 focus-visible:ring-2 focus-visible:ring-zinc-400"
       >
-        <X className="h-3.5 w-3.5" />
+        <X className="h-4 w-4" />
       </button>
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400">
+      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-500">
         Get started
       </p>
       <ol className="mt-3 space-y-2">
@@ -145,7 +145,7 @@ function OnboardingChecklist({ steps }: { steps: OnboardingStep[] }) {
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-[11px] font-semibold text-white">
                   <Check weight="bold" className="h-3 w-3" />
                 </span>
-                <span className="truncate text-sm text-zinc-400 line-through">{s.label}</span>
+                <span className="truncate text-sm text-zinc-500 line-through">{s.label}</span>
               </div>
             ) : (
               // Step-linked (journey §4): the whole row is the action.
@@ -230,7 +230,7 @@ export function Overview() {
             { label: 'Open bank lines', value: stats.unrec, format: int },
           ] as const).map((m) => (
             <div key={m.label} className="bg-white px-6 py-10 lg:px-10">
-              <dt className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400">
+              <dt className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-500">
                 {m.label}
               </dt>
               <dd className="num mt-3 text-3xl font-semibold tracking-tight text-zinc-900 tabular-nums lg:text-4xl">
@@ -311,7 +311,7 @@ export function Overview() {
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-zinc-800">{inv.company_name}</p>
-                    <p className="num mt-0.5 truncate text-[11px] text-zinc-400">
+                    <p className="num mt-0.5 truncate text-[11px] text-zinc-500">
                       {inv.invoice_number} · {inv.invoice_date?.slice(0, 10) ?? '—'}
                     </p>
                   </div>

@@ -61,7 +61,7 @@ export function Footer() {
       <div className="mx-auto flex w-full max-w-[1100px] flex-col items-center gap-4 px-6 py-8 sm:flex-row sm:justify-between">
         <div>
           <p className="text-sm font-semibold tracking-tight">FFAA</p>
-          <p className="mt-0.5 text-xs text-zinc-400">Practice bookkeeping, minus the data entry.</p>
+          <p className="mt-0.5 text-xs text-zinc-500">Practice bookkeeping, minus the data entry.</p>
         </div>
         <nav className="flex items-center gap-5 text-xs text-zinc-500">
           <Link to="/pricing" className="hover:text-zinc-900">Pricing</Link>
@@ -173,7 +173,7 @@ const STEPS = [
 function SectionHead({ kicker, title, body }: { kicker: string; title: string; body?: string }) {
   return (
     <div className="max-w-xl">
-      <motion.p variants={rise} className="text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-400">
+      <motion.p variants={rise} className="text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-500">
         {kicker}
       </motion.p>
       <motion.h2 variants={rise} className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
@@ -199,7 +199,7 @@ export function Landing() {
         {/* hero */}
         <section className="mx-auto w-full max-w-[1100px] px-6 pb-16 pt-20 text-center sm:pt-28">
           <motion.div variants={group} initial="hidden" animate="show">
-            <motion.p variants={rise} className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-400">
+            <motion.p variants={rise} className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
               Books · GST · Tally
             </motion.p>
             <motion.h1
@@ -249,7 +249,7 @@ export function Landing() {
                 {FEATURES.map((f) => (
                   <motion.article key={f.title} variants={rise} className="surface elev-1 rounded-xl p-6">
                     <f.icon className="h-5 w-5 text-zinc-900" aria-hidden />
-                    <h3 className="mt-4 text-sm font-semibold tracking-tight">{f.title}</h3>
+                    <h2 className="mt-4 text-sm font-semibold tracking-tight">{f.title}</h2>
                     <p className="mt-2 text-sm leading-relaxed text-zinc-500">{f.body}</p>
                   </motion.article>
                 ))}
@@ -267,8 +267,8 @@ export function Landing() {
             <ol className="mt-12 grid gap-4 sm:grid-cols-3">
               {STEPS.map((s) => (
                 <motion.li key={s.n} variants={rise} className="rounded-xl border border-zinc-200 bg-surface p-6">
-                  <p className="num text-xs font-semibold tracking-widest text-zinc-400">{s.n}</p>
-                  <h3 className="mt-3 text-sm font-semibold tracking-tight">{s.title}</h3>
+                  <p className="num text-xs font-semibold tracking-widest text-zinc-500">{s.n}</p>
+                  <h2 className="mt-3 text-sm font-semibold tracking-tight">{s.title}</h2>
                   <p className="mt-2 text-sm leading-relaxed text-zinc-500">{s.body}</p>
                 </motion.li>
               ))}
@@ -306,10 +306,10 @@ export function Landing() {
                         : 'elev-1 rounded-xl border border-zinc-200 bg-white p-6'
                     }
                   >
-                    <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">{p.name}</p>
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">{p.name}</p>
                     <p className="mt-2 num text-2xl font-semibold tracking-tight">
                       {p.price}
-                      <span className="ml-1.5 text-xs font-normal text-zinc-400">{p.cadence}</span>
+                      <span className="ml-1.5 text-xs font-normal text-zinc-500">{p.cadence}</span>
                     </p>
                     <ul className="mt-4 space-y-1.5">
                       {p.pts.map((pt) => (

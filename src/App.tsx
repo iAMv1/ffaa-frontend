@@ -197,7 +197,7 @@ function AppShell() {
           <TopBar />
 
           {err && (
-            <div className="mb-5 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            <div role="alert" className="mb-5 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
               <WarningCircle className="mt-0.5 h-4 w-4 shrink-0" weight="fill" />
               <span>
                 Cannot reach the API — check your connection.{' '}
@@ -271,7 +271,7 @@ function AppShell() {
             <div className="space-y-1.5">
               <Label
                 htmlFor="new-client-name"
-                className="text-[11px] font-medium uppercase tracking-wide text-zinc-400"
+                className="text-[11px] font-medium uppercase tracking-wide text-zinc-500"
               >
                 Client name
               </Label>
@@ -300,7 +300,7 @@ function AppShell() {
                 disabled={!newClientName.trim() || busy}
                 className="bg-zinc-900 text-xs font-medium text-white hover:bg-zinc-800"
               >
-                {busy && <CircleNotch className="h-3.5 w-3.5 animate-spin" />}
+                {busy && <CircleNotch aria-hidden className="h-3.5 w-3.5 animate-spin" />}
                 Create
               </Button>
             </DialogFooter>

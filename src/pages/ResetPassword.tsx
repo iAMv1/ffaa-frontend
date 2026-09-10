@@ -9,7 +9,7 @@ import { useAuth } from '@/state/auth'
 import { AuthShell } from '@/pages/AuthShell'
 
 const fieldLabel =
-  'text-[11px] font-medium uppercase tracking-wide text-zinc-400'
+  'text-[11px] font-medium uppercase tracking-wide text-zinc-500'
 
 export function ResetPassword() {
   const { resetPassword } = useAuth()
@@ -86,7 +86,7 @@ export function ResetPassword() {
           />
         </div>
         <Button type="submit" disabled={busy} className="w-full bg-zinc-900 text-xs font-medium text-white hover:bg-zinc-800">
-          {busy && <CircleNotch className="h-3.5 w-3.5 animate-spin" />}
+          {busy && <CircleNotch aria-hidden className="h-3.5 w-3.5 animate-spin" />}
           Update password
         </Button>
       </form>

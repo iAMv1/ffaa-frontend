@@ -115,7 +115,7 @@ export function Bank() {
                 const f = e.dataTransfer.files[0]
                 if (f && clientId != null) onUploadBank(f)
               }}
-              className={`relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed px-4 py-10 text-center transition-colors ${
+              className={`relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed px-4 py-10 text-center transition-colors has-[input:focus-visible]:border-emerald-500 has-[input:focus-visible]:ring-2 has-[input:focus-visible]:ring-emerald-500/40 ${
                 busy || clientId == null
                   ? 'border-zinc-200 bg-zinc-50/50 text-zinc-400'
                   : bankDragOver
@@ -128,13 +128,14 @@ export function Bank() {
                 accept=".csv,.txt,.pdf"
                 className="absolute inset-0 cursor-pointer opacity-0"
                 disabled={busy || clientId == null}
+                aria-label="Upload bank statement"
                 title={clientId == null ? 'Select a client first' : 'Upload bank statement'}
                 onChange={(e) => onUploadBank(e.target.files?.[0] ?? null)}
               />
               {busy ? (
-                <CircleNotch className="h-6 w-6 animate-spin" />
+                <CircleNotch aria-hidden className="h-6 w-6 animate-spin" />
               ) : (
-                <UploadSimple className="h-6 w-6" weight="bold" />
+                <UploadSimple aria-hidden className="h-6 w-6" weight="bold" />
               )}
               <span className="text-sm font-medium">Bank statement</span>
               <span className="text-xs opacity-60">
@@ -193,7 +194,7 @@ export function Bank() {
                     </div>
                   ))}
                   {bankPreviewRows.length > 50 && (
-                    <p className="px-5 py-2 text-[11px] text-zinc-400">
+                    <p className="px-5 py-2 text-[11px] text-zinc-500">
                       …and {bankPreviewRows.length - 50} more
                     </p>
                   )}
@@ -216,22 +217,22 @@ export function Bank() {
           <Table className="min-w-[640px] text-left">
             <TableHeader>
               <TableRow className="border-b border-zinc-100 hover:bg-transparent">
-                <TableHead className="h-10 px-5 text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+                <TableHead className="h-10 px-5 text-[11px] font-medium uppercase tracking-wide text-zinc-500">
                   Date
                 </TableHead>
-                <TableHead className="h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+                <TableHead className="h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-500">
                   Narration
                 </TableHead>
-                <TableHead className="h-10 px-3 text-right text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+                <TableHead className="h-10 px-3 text-right text-[11px] font-medium uppercase tracking-wide text-zinc-500">
                   Debit
                 </TableHead>
-                <TableHead className="h-10 px-3 text-right text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+                <TableHead className="h-10 px-3 text-right text-[11px] font-medium uppercase tracking-wide text-zinc-500">
                   Credit
                 </TableHead>
-                <TableHead className="h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+                <TableHead className="h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-500">
                   Invoice
                 </TableHead>
-                <TableHead className="h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+                <TableHead className="h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-500">
                   State
                 </TableHead>
                 <TableHead className="h-10 px-5" />
@@ -255,7 +256,7 @@ export function Bank() {
                   <td
                     className={cn(
                       'num px-5 py-3.5',
-                      b.reconciled ? 'text-zinc-400' : 'text-zinc-600',
+                      b.reconciled ? 'text-zinc-500' : 'text-zinc-600',
                     )}
                   >
                     {b.date}
@@ -263,14 +264,14 @@ export function Bank() {
                   <td
                     className={cn(
                       'max-w-xs truncate px-3 py-3.5',
-                      b.reconciled ? 'text-zinc-400' : 'text-zinc-800',
+                      b.reconciled ? 'text-zinc-500' : 'text-zinc-800',
                     )}
                   >
                     {b.narration}
                   </td>
                   <td className="num px-3 py-3.5 text-right">
                     {b.debit ? (
-                      <span className={b.reconciled ? 'text-zinc-400' : 'text-zinc-900'}>
+                      <span className={b.reconciled ? 'text-zinc-500' : 'text-zinc-900'}>
                         {money(b.debit)}
                       </span>
                     ) : (
@@ -305,7 +306,7 @@ export function Bank() {
                         <CheckCircle weight="fill" /> Matched
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="border-zinc-200 px-1.5 text-zinc-400">
+                      <Badge variant="outline" className="border-zinc-200 px-1.5 text-zinc-500">
                         Open
                       </Badge>
                     )}

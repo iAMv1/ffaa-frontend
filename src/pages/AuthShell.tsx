@@ -23,7 +23,7 @@ export function AuthShell({
     <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-canvas px-4 py-10">
       <Link to="/" className="mb-8 text-center">
         <h1 className="text-xl font-semibold tracking-tight text-zinc-900">FFAA</h1>
-        <p className="mt-0.5 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-400">
+        <p className="mt-0.5 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-500">
           Books · GST · Tally
         </p>
       </Link>
@@ -33,7 +33,7 @@ export function AuthShell({
         <p className="mt-1 text-sm leading-relaxed text-zinc-500">{subtitle}</p>
 
         {error && (
-          <div className="mt-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-xs leading-relaxed text-red-800">
+          <div role="alert" className="mt-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-xs leading-relaxed text-red-800">
             <WarningCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" weight="fill" />
             <span>{error}</span>
           </div>

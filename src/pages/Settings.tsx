@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
 const fieldLabel =
-  'text-[11px] font-medium uppercase tracking-wide text-zinc-400'
+  'text-[11px] font-medium uppercase tracking-wide text-zinc-500'
 
 export function Settings() {
   const { user, refresh } = useAuth()
@@ -81,7 +81,7 @@ export function Settings() {
     <div className="space-y-6">
       <Card className="gap-0 rounded-2xl border-zinc-200 bg-white px-6 py-5 shadow-sm">
         <div className="flex items-center justify-between">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
             Profile
           </p>
           {user?.is_verified === false && (
@@ -125,14 +125,14 @@ export function Settings() {
             disabled={emailBusy || !newEmail || !emailPassword}
             className="bg-zinc-900 text-xs font-medium text-white hover:bg-zinc-800"
           >
-            {emailBusy && <CircleNotch className="h-3.5 w-3.5 animate-spin" />}
+            {emailBusy && <CircleNotch aria-hidden className="h-3.5 w-3.5 animate-spin" />}
             Update email
           </Button>
         </form>
       </Card>
 
       <Card className="gap-0 rounded-2xl border-zinc-200 bg-white px-6 py-5 shadow-sm">
-        <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
           Password
         </p>
         <form onSubmit={onPasswordSubmit} className="mt-4 max-w-sm space-y-4">
@@ -185,7 +185,7 @@ export function Settings() {
             }
             className="bg-zinc-900 text-xs font-medium text-white hover:bg-zinc-800"
           >
-            {pwBusy && <CircleNotch className="h-3.5 w-3.5 animate-spin" />}
+            {pwBusy && <CircleNotch aria-hidden className="h-3.5 w-3.5 animate-spin" />}
             Update password
           </Button>
         </form>

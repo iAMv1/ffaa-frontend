@@ -301,7 +301,7 @@ export function Billing() {
     <div className="space-y-6">
       {/* current plan */}
       <div className="surface rounded-xl px-6 py-5">
-        <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400">
+        <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-500">
           Current plan
         </p>
         {!sv ? (
@@ -355,7 +355,7 @@ export function Billing() {
                   className="bg-zinc-900 text-xs font-medium text-white hover:bg-zinc-800"
                 >
                   {subscribing ? (
-                    <CircleNotch className="h-3.5 w-3.5 animate-spin" />
+                    <CircleNotch aria-hidden className="h-3.5 w-3.5 animate-spin" />
                   ) : (
                     <ArrowUpRight className="h-3.5 w-3.5" />
                   )}
@@ -432,16 +432,16 @@ export function Billing() {
           <Table className="min-w-[560px]">
             <TableHeader>
               <TableRow className="border-zinc-100 hover:bg-transparent">
-                <TableHead className="h-10 px-5 text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+                <TableHead className="h-10 px-5 text-[11px] font-medium uppercase tracking-wide text-zinc-500">
                   Date
                 </TableHead>
-                <TableHead className="h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+                <TableHead className="h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-500">
                   Reference
                 </TableHead>
-                <TableHead className="h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+                <TableHead className="h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-500">
                   Amount
                 </TableHead>
-                <TableHead className="h-10 px-5 text-right text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+                <TableHead className="h-10 px-5 text-right text-[11px] font-medium uppercase tracking-wide text-zinc-500">
                   Status
                 </TableHead>
               </TableRow>

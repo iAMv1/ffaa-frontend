@@ -38,7 +38,7 @@ import {
 
 const FILE_TYPES = '.jpg .jpeg .png .bmp .tif .tiff .pdf'
 
-const HEAD_CLS = 'h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-400'
+const HEAD_CLS = 'h-10 px-3 text-[11px] font-medium uppercase tracking-wide text-zinc-500'
 
 // Explicit pins while shadcn @theme tokens are pending (ShellAgent patching
 // index.css); twMerge keeps these winning over variant defaults either way.
@@ -293,7 +293,7 @@ export function Invoices() {
               animate={{ scale: over ? 1.015 : 1 }}
               transition={{ type: 'spring', stiffness: 100, damping: 20 }}
               className={cn(
-                'relative flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed px-4 py-8 text-center transition-colors',
+                'relative flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed px-4 py-8 text-center transition-colors has-[input:focus-visible]:border-emerald-600/40 has-[input:focus-visible]:ring-2 has-[input:focus-visible]:ring-emerald-600/40',
                 disabled
                   ? 'border-zinc-200 bg-zinc-50/50 text-zinc-400'
                   : over
@@ -307,6 +307,7 @@ export function Invoices() {
                 multiple
                 className="absolute inset-0 cursor-pointer opacity-0"
                 disabled={disabled}
+                aria-label={`Upload ${t} invoices`}
                 title={disabled ? 'Select a client first' : `Upload ${t} invoices`}
                 onChange={(e) => {
                   const fs = Array.from(e.target.files ?? [])
@@ -325,9 +326,9 @@ export function Invoices() {
                 )}
               >
                 {uploadBusy ? (
-                  <CircleNotch className="h-5 w-5 animate-spin" />
+                  <CircleNotch aria-hidden className="h-5 w-5 animate-spin" />
                 ) : (
-                  <UploadSimple className="h-5 w-5" weight="bold" />
+                  <UploadSimple aria-hidden className="h-5 w-5" weight="bold" />
                 )}
               </span>
               <span className="text-sm font-medium capitalize">{t} invoices</span>
@@ -338,7 +339,7 @@ export function Invoices() {
                     ? 'Select a client first'
                     : 'Drop files or click to browse'}
               </span>
-              <span className="num text-[10px] tracking-tight text-zinc-400">{FILE_TYPES}</span>
+              <span className="num text-[10px] tracking-tight text-zinc-500">{FILE_TYPES}</span>
             </motion.div>
           )
         })}
@@ -353,8 +354,8 @@ export function Invoices() {
               <span className="mx-1.5 text-zinc-300">·</span>
               <span className="text-red-700">{failedRows.length} failed</span>
               {uploadBusy && (
-                <span className="ml-2 inline-flex items-center gap-1 font-normal text-zinc-400">
-                  <CircleNotch className="h-3 w-3 animate-spin" />
+                <span className="ml-2 inline-flex items-center gap-1 font-normal text-zinc-500">
+                  <CircleNotch aria-hidden className="h-3 w-3 animate-spin" />
                   working
                 </span>
               )}
@@ -383,17 +384,17 @@ export function Invoices() {
               <div key={row.key} className="flex items-center justify-between gap-3 px-4 py-2 text-xs">
                 <span className="truncate text-zinc-700">{row.file.name}</span>
                 {row.state === 'queued' && (
-                  <span className="shrink-0 text-zinc-400">queued</span>
+                  <span className="shrink-0 text-zinc-500">queued</span>
                 )}
                 {row.state === 'uploading' && (
                   <span className="flex shrink-0 items-center gap-1.5 text-amber-700">
-                    <CircleNotch className="h-3 w-3 animate-spin" />
+                    <CircleNotch aria-hidden className="h-3 w-3 animate-spin" />
                     uploading…
                   </span>
                 )}
                 {row.state === 'extracting' && (
                   <span className="flex shrink-0 items-center gap-1.5 text-amber-700">
-                    <CircleNotch className="h-3 w-3 animate-spin" />
+                    <CircleNotch aria-hidden className="h-3 w-3 animate-spin" />
                     extracting (OCR)…
                   </span>
                 )}
@@ -509,7 +510,7 @@ export function Invoices() {
                         )}
                         {Math.round(inv.ocr_confidence * 100)}%
                         {inv.source ? (
-                          <span className="text-[10px] font-normal text-zinc-400">
+                          <span className="text-[10px] font-normal text-zinc-500">
                             {'· '}{inv.source === 'text' ? 'text' : 'OCR'}
                           </span>
                         ) : null}
@@ -588,7 +589,7 @@ export function Invoices() {
                           className="gap-1.5 bg-emerald-700 px-2.5 text-xs text-white hover:bg-emerald-800"
                         >
                           {rowBusy === inv.id ? (
-                            <CircleNotch className="h-3.5 w-3.5 animate-spin" />
+                            <CircleNotch aria-hidden className="h-3.5 w-3.5 animate-spin" />
                           ) : (
                             <CheckCircle className="h-3.5 w-3.5" weight="bold" />
                           )}
@@ -689,7 +690,7 @@ export function Invoices() {
                                 ] as const
                               ).map(([key, label, type]) => (
                                 <Label key={key} className="flex-col items-start gap-1.5">
-                                  <span className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+                                  <span className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
                                     {label}
                                   </span>
                                   <Input
@@ -713,7 +714,7 @@ export function Invoices() {
                                 </Label>
                               ))}
                               <Label className="col-span-2 flex-col items-start gap-1.5 md:col-span-4">
-                                <span className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">
+                                <span className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
                                   Item description
                                 </span>
                                 <Input
@@ -745,7 +746,7 @@ export function Invoices() {
                                 className="gap-1.5 bg-zinc-900 text-white hover:bg-zinc-800"
                               >
                                 {rowBusy === inv.id && (
-                                  <CircleNotch className="h-3.5 w-3.5 animate-spin" />
+                                  <CircleNotch aria-hidden className="h-3.5 w-3.5 animate-spin" />
                                 )}
                                 Save review
                               </Button>
