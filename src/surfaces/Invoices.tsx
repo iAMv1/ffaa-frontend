@@ -508,6 +508,11 @@ export function Invoices() {
                           />
                         )}
                         {Math.round(inv.ocr_confidence * 100)}%
+                        {inv.source ? (
+                          <span className="text-[10px] font-normal text-zinc-400">
+                            {'· '}{inv.source === 'text' ? 'text' : 'OCR'}
+                          </span>
+                        ) : null}
                       </span>
                     ) : (
                       <span className="text-zinc-500">—</span>

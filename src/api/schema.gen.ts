@@ -4,6 +4,163 @@
  */
 
 export interface paths {
+    "/api/v1/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Auth:Jwt.Login
+         * @description Form-encoded OAuth2 shape (contract pin). Sets the ffaaauth cookie.
+         */
+        post: operations["auth_jwt_login_api_v1_auth_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register:Register */
+        post: operations["register_register_api_v1_auth_register_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/forgot-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset:Forgot Password
+         * @description Always 202 — never reveals whether the address exists (no enumeration).
+         */
+        post: operations["reset_forgot_password_api_v1_auth_forgot_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset:Reset Password
+         * @description Consumes a tv-stamped reset token; success bumps token_version.
+         */
+        post: operations["reset_reset_password_api_v1_auth_reset_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Auth:Jwt.Logout */
+        post: operations["auth_jwt_logout_api_v1_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update Account
+         * @description Authenticated account self-service (PATCH /api/v1/auth/account).
+         *
+         *     Email and password changes both require current_password — an
+         *     account-takeover guard, since a hijacked session alone must not be able
+         *     to lock the owner out. Either change bumps token_version: every session
+         *     cookie (all devices) is revoked and the FE must re-login.
+         */
+        patch: operations["update_account_api_v1_auth_account_patch"];
+        trace?: never;
+    };
+    "/api/v1/auth/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Auth Providers
+         * @description Advertises configured social-login providers so the FE renders only
+         *     buttons that can actually complete their flow.
+         */
+        get: operations["auth_providers_api_v1_auth_providers_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Me */
+        get: operations["me_api_v1_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/clients": {
         parameters: {
             query?: never;
@@ -125,24 +282,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/invoices/{invoice_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Invoice */
-        get: operations["get_invoice_api_v1_invoices__invoice_id__get"];
-        put?: never;
-        post?: never;
-        /** Delete Invoice */
-        delete: operations["delete_invoice_api_v1_invoices__invoice_id__delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/invoices/{invoice_id}/review": {
         parameters: {
             query?: never;
@@ -172,6 +311,23 @@ export interface paths {
         put: operations["approve_invoice_api_v1_invoices__invoice_id__approve_put"];
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invoices/{invoice_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Invoice */
+        delete: operations["delete_invoice_api_v1_invoices__invoice_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -419,17 +575,210 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/reminders/templates": {
+    "/api/v1/billing/plans": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List Templates */
-        get: operations["list_templates_api_v1_reminders_templates_get"];
+        /**
+         * List Plans
+         * @description Public plan catalog (no auth) — landing/pricing pulls this.
+         */
+        get: operations["list_plans_api_v1_billing_plans_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Billing Me */
+        get: operations["billing_me_api_v1_billing_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Billing History
+         * @description Paged payment receipts incl. subscription charges (design §6).
+         */
+        get: operations["billing_history_api_v1_billing_history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/subscribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Subscription
+         * @description Create a Razorpay Subscription (test-mode friendly); returns checkout
+         *     info for the FE Checkout.js modal. Plan creation is idempotent via the
+         *     cached rzp_plan_id; an already-live local subscription is returned as-is
+         *     instead of stacking a second mandate.
+         *     Supports both /subscriptions (canonical, design §6) and /subscribe (alias
+         *     for assignment idempotency check).
+         */
+        post: operations["create_subscription_api_v1_billing_subscribe_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/subscriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Subscription
+         * @description Create a Razorpay Subscription (test-mode friendly); returns checkout
+         *     info for the FE Checkout.js modal. Plan creation is idempotent via the
+         *     cached rzp_plan_id; an already-live local subscription is returned as-is
+         *     instead of stacking a second mandate.
+         *     Supports both /subscriptions (canonical, design §6) and /subscribe (alias
+         *     for assignment idempotency check).
+         */
+        post: operations["create_subscription_api_v1_billing_subscriptions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/subscriptions/{rzp_sub_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel Subscription
+         * @description Cancel at cycle end ONLY (design §4): Pro continues to
+         *     current_period_end, then the `subscription.cancelled` webhook flips the
+         *     effective plan to free. Immediate cancel is admin-only (not exposed).
+         */
+        post: operations["cancel_subscription_api_v1_billing_subscriptions__rzp_sub_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/subscriptions/{rzp_sub_id}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pause Subscription
+         * @description Proxy to RZP pause; only active subs can pause (RZP rule).
+         */
+        post: operations["pause_subscription_api_v1_billing_subscriptions__rzp_sub_id__pause_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/subscriptions/{rzp_sub_id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resume Subscription
+         * @description Proxy to RZP resume → active; recovery clears any grace clock.
+         */
+        post: operations["resume_subscription_api_v1_billing_subscriptions__rzp_sub_id__resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Verify Payment
+         * @description HMAC-check-only reporting endpoint (design §5/§6): verifies the
+         *     Checkout signature over `payment_id|subscription_id`, marks our payment
+         *     row seen for UI responsiveness, returns the current plan snapshot. It
+         *     NEVER grants entitlement — subscription.activated/.charged webhooks do
+         *     all crediting. Clients can never mint credit here.
+         */
+        post: operations["verify_payment_api_v1_billing_verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Webhook */
+        post: operations["webhook_api_v1_billing_webhook_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -457,6 +806,15 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AccountUpdate */
+        AccountUpdate: {
+            /** Email */
+            email?: string | null;
+            /** New Password */
+            new_password?: string | null;
+            /** Current Password */
+            current_password?: string | null;
+        };
         /** BankStatementOut */
         BankStatementOut: {
             /** Client Id */
@@ -486,8 +844,45 @@ export interface components {
             reconciled: boolean;
             /** Invoice Id */
             invoice_id?: number | null;
-            /** File Path */
-            file_path?: string | null;
+        };
+        /** Body_auth_jwt_login_api_v1_auth_login_post */
+        Body_auth_jwt_login_api_v1_auth_login_post: {
+            /** Grant Type */
+            grant_type?: string | null;
+            /** Username */
+            username: string;
+            /**
+             * Password
+             * Format: password
+             */
+            password: string;
+            /**
+             * Scope
+             * @default
+             */
+            scope: string;
+            /** Client Id */
+            client_id?: string | null;
+            /**
+             * Client Secret
+             * Format: password
+             */
+            client_secret?: string | null;
+        };
+        /** Body_reset_forgot_password_api_v1_auth_forgot_password_post */
+        Body_reset_forgot_password_api_v1_auth_forgot_password_post: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+        };
+        /** Body_reset_reset_password_api_v1_auth_reset_password_post */
+        Body_reset_reset_password_api_v1_auth_reset_password_post: {
+            /** Token */
+            token: string;
+            /** Password */
+            password: string;
         };
         /** Body_upload_bank_api_v1_bank_statements_upload_post */
         Body_upload_bank_api_v1_bank_statements_upload_post: {
@@ -616,6 +1011,13 @@ export interface components {
             /** Created At */
             created_at?: string | null;
         };
+        /** ErrorModel */
+        ErrorModel: {
+            /** Detail */
+            detail: string | {
+                [key: string]: string;
+            };
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -663,6 +1065,16 @@ export interface components {
             igst: number;
             /** Hsn Code */
             hsn_code?: string | null;
+            /** Supplier Gstin */
+            supplier_gstin?: string | null;
+            /** Buyer Name */
+            buyer_name?: string | null;
+            /** Buyer Gstin */
+            buyer_gstin?: string | null;
+            /** Place Of Supply */
+            place_of_supply?: string | null;
+            /** Source */
+            source?: string | null;
             /** Quantity */
             quantity?: number | null;
             /** Item Description */
@@ -670,8 +1082,9 @@ export interface components {
             /**
              * Invoice Type
              * @default sales
+             * @enum {string}
              */
-            invoice_type: string;
+            invoice_type: "sales" | "purchase";
             /**
              * Items
              * @default []
@@ -792,6 +1205,16 @@ export interface components {
             igst: number;
             /** Hsn Code */
             hsn_code?: string | null;
+            /** Supplier Gstin */
+            supplier_gstin?: string | null;
+            /** Buyer Name */
+            buyer_name?: string | null;
+            /** Buyer Gstin */
+            buyer_gstin?: string | null;
+            /** Place Of Supply */
+            place_of_supply?: string | null;
+            /** Source */
+            source?: string | null;
             /** Quantity */
             quantity?: number | null;
             /** Item Description */
@@ -799,8 +1222,9 @@ export interface components {
             /**
              * Invoice Type
              * @default sales
+             * @enum {string}
              */
-            invoice_type: string;
+            invoice_type: "sales" | "purchase";
             /** Id */
             id: number;
             /** Status */
@@ -809,8 +1233,6 @@ export interface components {
             approved: boolean;
             /** Ocr Confidence */
             ocr_confidence?: number | null;
-            /** File Path */
-            file_path?: string | null;
             /**
              * Is Duplicate
              * @default false
@@ -868,14 +1290,13 @@ export interface components {
              */
             send: boolean;
         };
-        /** ReminderTemplate */
-        ReminderTemplate: {
-            /** Name */
-            name: string;
-            /** Subject */
-            subject: string;
-            /** Body */
-            body: string;
+        /** SubscribeRequest */
+        SubscribeRequest: {
+            /**
+             * Plan Code
+             * @default pro
+             */
+            plan_code: string;
         };
         /** UploadFileResult */
         UploadFileResult: {
@@ -886,6 +1307,58 @@ export interface components {
             invoice?: components["schemas"]["InvoiceOut"] | null;
             /** Error */
             error?: string | null;
+        };
+        /** UserCreate */
+        UserCreate: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Password */
+            password: string;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean | null;
+            /**
+             * Is Superuser
+             * @default false
+             */
+            is_superuser: boolean | null;
+            /**
+             * Is Verified
+             * @default false
+             */
+            is_verified: boolean | null;
+        };
+        /** UserRead */
+        UserRead: {
+            /** Id */
+            id: number;
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /**
+             * Is Superuser
+             * @default false
+             */
+            is_superuser: boolean;
+            /**
+             * Is Verified
+             * @default false
+             */
+            is_verified: boolean;
+            /** Created At */
+            created_at?: string | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -900,6 +1373,15 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
+        /** VerifyRequest */
+        VerifyRequest: {
+            /** Razorpay Payment Id */
+            razorpay_payment_id: string;
+            /** Razorpay Subscription Id */
+            razorpay_subscription_id: string;
+            /** Razorpay Signature */
+            razorpay_signature: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -909,6 +1391,270 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    auth_jwt_login_api_v1_auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/x-www-form-urlencoded": components["schemas"]["Body_auth_jwt_login_api_v1_auth_login_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorModel"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    register_register_api_v1_auth_register_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserRead"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorModel"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_forgot_password_api_v1_auth_forgot_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Body_reset_forgot_password_api_v1_auth_forgot_password_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_reset_password_api_v1_auth_reset_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Body_reset_reset_password_api_v1_auth_reset_password_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorModel"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    auth_jwt_logout_api_v1_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing token or inactive user. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    update_account_api_v1_auth_account_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    auth_providers_api_v1_auth_providers_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    me_api_v1_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserRead"];
+                };
+            };
+        };
+    };
     list_clients_api_v1_clients_get: {
         parameters: {
             query?: {
@@ -1202,68 +1948,6 @@ export interface operations {
             };
         };
     };
-    get_invoice_api_v1_invoices__invoice_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                invoice_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["InvoiceOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_invoice_api_v1_invoices__invoice_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                invoice_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     review_invoice_api_v1_invoices__invoice_id__review_put: {
         parameters: {
             query?: never;
@@ -1317,6 +2001,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InvoiceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_invoice_api_v1_invoices__invoice_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -1780,7 +2495,7 @@ export interface operations {
             };
         };
     };
-    list_templates_api_v1_reminders_templates_get: {
+    list_plans_api_v1_billing_plans_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1795,7 +2510,271 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ReminderTemplate"][];
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    billing_me_api_v1_billing_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    billing_history_api_v1_billing_history_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_subscription_api_v1_billing_subscribe_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubscribeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_subscription_api_v1_billing_subscriptions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubscribeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_subscription_api_v1_billing_subscriptions__rzp_sub_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rzp_sub_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pause_subscription_api_v1_billing_subscriptions__rzp_sub_id__pause_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rzp_sub_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resume_subscription_api_v1_billing_subscriptions__rzp_sub_id__resume_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rzp_sub_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_payment_api_v1_billing_verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    webhook_api_v1_billing_webhook_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
         };

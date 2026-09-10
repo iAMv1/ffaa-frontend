@@ -19,7 +19,7 @@ export function Register() {
     fetch('/api/v1/auth/providers')
       .then((r) => (r.ok ? r.json() : { providers: [] }))
       .then((d) => setSocialProviders(d.providers ?? []))
-      .catch(() => {})
+      .catch((e) => { console.debug('social providers unavailable', e) })
   }, [])
   const { user, booting, register } = useAuth()
   const navigate = useNavigate()

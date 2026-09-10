@@ -25,7 +25,7 @@ export function Login() {
     fetch('/api/v1/auth/providers')
       .then((r) => (r.ok ? r.json() : { providers: [] }))
       .then((d) => setSocialProviders(d.providers ?? []))
-      .catch(() => {})
+      .catch((e) => { console.debug('social providers unavailable', e) })
   }, [])
 
   // Already signed in — the login page has nothing to offer.

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Component, useEffect, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
 import { CircleNotch, WarningCircle } from '@phosphor-icons/react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useOutlet } from 'react-router'
@@ -57,12 +57,40 @@ const tabMotion = {
   transition: { duration: 0.2, ease: TAB_EASE },
 }
 
+// Audit M: a render crash in any surface must not white-screen the shell —
+// isolate it, explain it, and offer reload. React-only, no deps.
+class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  state = { error: null as Error | null }
+  static getDerivedStateFromError(error: Error) { return { error } }
+  componentDidCatch(error: Error) { console.error('FFAA shell render crash:', error) }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24 }}>
+          <div style={{ maxWidth: 460, border: '1px solid var(--color-line)', borderRadius: 12, padding: 20, background: 'var(--color-surface)' }}>
+            <h2 style={{ fontSize: 15, margin: '0 0 6px' }}>Something broke while rendering</h2>
+            <p style={{ fontSize: 13, color: '#52525b', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+              {String(this.state.error.message || this.state.error)}
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              style={{ marginTop: 12, padding: '8px 14px', borderRadius: 8, border: '1px solid var(--color-line)', background: 'transparent', cursor: 'pointer' }}
+            >Reload</button>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
 export default function App() {
   return (
     <MotionConfig reducedMotion="user">
       {/* AuthProvider needs the router context (401 interceptor navigates) */}
-      <BrowserRouter>
-        <AuthProvider>
+        <ErrorBoundary>
+          <BrowserRouter>
+            <AuthProvider>
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/pricing" element={<Pricing />} />
@@ -115,8 +143,9 @@ export default function App() {
               },
             }}
           />
-        </AuthProvider>
-      </BrowserRouter>
+            </AuthProvider>
+          </BrowserRouter>
+        </ErrorBoundary>
     </MotionConfig>
   )
 }

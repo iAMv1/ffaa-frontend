@@ -228,11 +228,10 @@ export function Billing() {
   const pro = plans.find((p) => p.code === 'pro')
   const proName = pro?.name ?? 'Pro'
   const sv = me ? statusView(me) : null
-  const onPaidTier =
-    !!sv &&
-    ['active', 'pending', 'past_due', 'halted', 'paused', 'created', 'authenticated', 'disputed'].includes(
-      (me?.rzp_status ?? me?.status ?? '').toLowerCase(),
-    )
+  // S2 (audit): paid-tier UI must mirror the BACKEND entitlement predicate
+  // (billing.effective_plan_code: pro iff active or within grace) — raw
+  // rzp_status values like created/authenticated do NOT mean Pro yet.
+  const onPaidTier = me?.plan_code === 'pro'
   const showUpgrade = !!sv && (sv.resubscribe || (!onPaidTier && me?.plan_code !== 'pro'))
 
   const startSubscribe = async () => {
