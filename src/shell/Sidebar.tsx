@@ -203,7 +203,7 @@ export function Sidebar() {
           </nav>
 
           {sidebarCollapsed && clients.length > 0 && (
-            <div className="relative">
+          <div className="relative hidden md:block">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
@@ -272,6 +272,23 @@ export function Sidebar() {
             </div>
           )}
 
+          {/* collapsed rail: sign-out pinned to the rail bottom */}
+          {sidebarCollapsed && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={signOut}
+                  aria-label="Sign out"
+                  className="mt-auto hidden w-full items-center justify-center rounded-lg p-2 text-zinc-500 outline-none transition hover:bg-zinc-100 hover:text-zinc-900 focus-visible:ring-2 focus-visible:ring-zinc-400 md:flex"
+                >
+                  <SignOut className="h-5 w-5 shrink-0" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Sign out</TooltipContent>
+            </Tooltip>
+          )}
+
           {/* expanded footer — scope + refresh */}
           <div
             className={cn(
@@ -280,12 +297,38 @@ export function Sidebar() {
               'border-t border-zinc-100',
             )}
           >
-            <label
-              htmlFor="client-select"
-              className="block text-[11px] font-medium uppercase tracking-wide text-zinc-500"
-            >
-              Client
-            </label>
+            <div className="flex items-center justify-between gap-2">
+              <label
+                htmlFor="client-select"
+                className="text-[11px] font-medium uppercase tracking-wide text-zinc-500"
+              >
+                Client
+              </label>
+              <div className="flex items-center gap-0.5">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  type="button"
+                  onClick={load}
+                  aria-label="Refresh"
+                  title="Refresh"
+                  className="text-zinc-500 hover:text-zinc-900"
+                >
+                  <ArrowsClockwise className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  type="button"
+                  onClick={() => setShowCreateClient(true)}
+                  aria-label="New client"
+                  title="New client"
+                  className="text-zinc-500 hover:text-zinc-900"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
             <select
               id="client-select"
               className="mt-1.5 w-full cursor-pointer appearance-none rounded-lg border border-zinc-200 bg-zinc-50 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%20256%20256%22%3E%3Cpath%20fill%3D%22%2371717a%22%20d%3D%22M213.7%2C101.7l-80%2C80a8.2%2C8.2%2C0%2C0%2C1-11.4%2C0l-80-80a8.1%2C8.1%2C0%2C0%2C1%2C11.4-11.4L128%2C164.7l74.3-74.4a8.1%2C8.1%2C0%2C0%2C1%2C11.4%2C11.4Z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_0.6rem_center] bg-no-repeat py-2 pl-2.5 pr-7 text-sm text-zinc-800 outline-none transition focus:border-zinc-400 focus:ring-2 focus:ring-zinc-400/25"
@@ -299,29 +342,22 @@ export function Sidebar() {
                 </option>
               ))}
             </select>
-            <Button
-              variant="outline"
-              size="sm"
-              type="button"
-              onClick={load}
-              className="mt-2 w-full border-zinc-200 text-xs text-zinc-600"
-            >
-              <ArrowsClockwise className="h-3.5 w-3.5" />
-              Refresh
-            </Button>
-            <div className="mt-3 flex items-center justify-between gap-2 border-t border-zinc-100 pt-3">
-              <span className="truncate text-xs text-zinc-500" title={user?.email}>
+            <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-3">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-[11px] font-semibold uppercase text-zinc-600">
+                {(user?.email ?? '?').slice(0, 1)}
+              </span>
+              <span className="min-w-0 flex-1 truncate text-xs text-zinc-500" title={user?.email}>
                 {user?.email ?? 'Signed in'}
               </span>
               <Button
                 variant="ghost"
-                size="icon-sm"
+                size="sm"
                 type="button"
                 onClick={signOut}
-                aria-label="Sign out"
-                className="shrink-0 text-zinc-400 hover:text-zinc-800"
+                className="shrink-0 text-zinc-500 hover:text-zinc-900"
               >
-                <SignOut className="h-4 w-4" />
+                <SignOut className="h-3.5 w-3.5" />
+                Sign out
               </Button>
             </div>
           </div>
